@@ -19,6 +19,7 @@ _ext
 *notes.md
 
 backup_files/
+cache/
 
 # Pycharm editor settings
 .idea
