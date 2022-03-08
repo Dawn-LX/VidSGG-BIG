@@ -1,7 +1,0 @@
-2022-03-07 00:32:06,133 - loading json results from /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/VidORval_predict_relations_topk10_pTrue_epoch70.json
-2022-03-07 00:32:22,030 - Done.
-2022-03-07 00:34:09,164 - loading json results from /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/VidORval_predict_relations_topk10_pTrue_epoch70.json
-2022-03-07 00:34:24,859 - Done.
-2022-03-07 00:34:30,008 - detection mean AP (used in challenge): 0.17679591933675462
-2022-03-07 00:34:30,008 - detection recall: {50: 0.09638056, 100: 0.11292658}
-2022-03-07 00:34:30,008 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
