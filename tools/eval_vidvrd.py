@@ -5,15 +5,10 @@ import pickle
 import json
 import os
 import argparse
-
-import torch
 from tqdm import tqdm
+import torch
 
-
-# from importlib import import_module
 from dataloaders.dataloader_vidvrd import Dataset,Dataset_pku,Dataset_pku_i3d
-# from dataloaders.dataloader_vidvrd_pku import Dataset,Dataset_i3d
-
 from models import BIG_C_vidvrd
 from utils.evaluate import EvalFmtCvtor
 from utils.utils_func import create_logger,parse_config_py
@@ -41,8 +36,6 @@ def save_checkpoint(batch_size,crt_epoch,model,optimizer,scheduler,save_path):
         "sched_state_dict":scheduler.state_dict(),
     }
     torch.save(checkpoint,save_path)
-
-# /home/gkf/project/VidSGG-BIG/tools/eval_vidvrd.py
 
 
 def inference_then_eval(

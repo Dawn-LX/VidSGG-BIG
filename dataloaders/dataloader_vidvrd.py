@@ -338,9 +338,9 @@ class Dataset(object):
         video_len = len(video_anno["trajectories"])
         video_wh = (video_anno["width"],video_anno["height"])
 
-        traj_categories = video_anno["subject/objects"]      # tid 未必从 0 ~ len(traj_categories)-1 都有
-        # tid2category_map = [traj["category"] for traj in traj_categories] #  这样写是不对的, tid 未必从 0 ~ len(traj_categories)-1 都有
-        tid2category_map = {traj["tid"]:traj["category"] for traj in traj_categories} # 要这样搞
+        traj_categories = video_anno["subject/objects"]      # tid not necessary 0 ~ len(traj_categories)-1
+        # tid2category_map = [traj["category"] for traj in traj_categories] #  This is WRONG!
+        tid2category_map = {traj["tid"]:traj["category"] for traj in traj_categories} # this is CORRECT
         # e.g., {0: 'bicycle', 1: 'bicycle', 2: 'person', 3: 'person', 5: 'person'}
         trajs = {traj["tid"]:{} for traj in traj_categories}
 
