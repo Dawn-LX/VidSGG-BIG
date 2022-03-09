@@ -1,3 +1,8 @@
+##############################
+# This file is deprecated
+print("!!!This file is deprecated!!!!")
+##############################
+
 vidvrd_categories = ['__background__',  # always index 0
             'airplane', 'antelope', 'bear', 'bicycle',
             'bird', 'bus', 'car', 'cattle',

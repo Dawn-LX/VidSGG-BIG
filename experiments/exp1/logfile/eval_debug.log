@@ -73,3 +73,39 @@
 2022-03-09 00:16:45,229 - detection recall: {50: 0.097097516, 100: 0.11046147}
 2022-03-09 00:16:45,229 - tagging precision: {1: 0.565, 5: 0.4430000091344118, 10: 0.32350000478327273}
 2022-03-09 00:16:45,229 - log file have been saved at experiments/exp1/logfile/eval_debug.log
+2022-03-09 00:46:06,356 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 00:46:06,356 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v1'}
+2022-03-09 00:46:06,356 - {'topk': 10}
+2022-03-09 00:46:12,644 - start inference...
+2022-03-09 00:46:12,645 - infer_config:{'topk': 10}
+2022-03-09 00:46:12,645 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth
+2022-03-09 00:46:25,954 - start convert format for evaluate...
+2022-03-09 00:46:38,962 - For part:**overall**, Computing average precision AP over 200 videos...
+2022-03-09 00:46:43,732 - detection mean AP (used in challenge): 0.17569763438478067
+2022-03-09 00:46:43,732 - detection recall: {50: 0.097097516, 100: 0.11046147}
+2022-03-09 00:46:43,733 - tagging precision: {1: 0.565, 5: 0.4430000091344118, 10: 0.32350000478327273}
+2022-03-09 00:46:43,733 - log file have been saved at experiments/exp1/logfile/eval_debug.log
+2022-03-09 00:52:24,723 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 00:52:24,723 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v1'}
+2022-03-09 00:52:24,723 - {'topk': 10}
+2022-03-09 00:52:31,334 - start inference...
+2022-03-09 00:52:31,335 - infer_config:{'topk': 10}
+2022-03-09 00:52:31,335 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth
+2022-03-09 00:52:44,964 - start convert format for evaluate...
+2022-03-09 00:52:58,070 - For part:**overall**, Computing average precision AP over 200 videos...
+2022-03-09 00:53:02,891 - detection mean AP (used in challenge): 0.17569763438478067
+2022-03-09 00:53:02,892 - detection recall: {50: 0.097097516, 100: 0.11046147}
+2022-03-09 00:53:02,892 - tagging precision: {1: 0.565, 5: 0.4430000091344118, 10: 0.32350000478327273}
+2022-03-09 00:53:02,892 - log file have been saved at experiments/exp1/logfile/eval_debug.log
+2022-03-09 00:53:28,935 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 00:53:28,935 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v1'}
+2022-03-09 00:53:28,935 - {'topk': 10}
+2022-03-09 00:54:13,602 - start inference...
+2022-03-09 00:54:13,602 - infer_config:{'topk': 10}
+2022-03-09 00:54:13,602 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth
+2022-03-09 00:54:29,586 - start convert format for evaluate...
+2022-03-09 00:54:42,796 - For part:**overall**, Computing average precision AP over 200 videos...
+2022-03-09 00:54:47,578 - detection mean AP (used in challenge): 0.17569763438478067
+2022-03-09 00:54:47,578 - detection recall: {50: 0.097097516, 100: 0.11046147}
+2022-03-09 00:54:47,578 - tagging precision: {1: 0.565, 5: 0.4430000091344118, 10: 0.32350000478327273}
+2022-03-09 00:54:47,578 - log file have been saved at experiments/exp1/logfile/eval_debug.log

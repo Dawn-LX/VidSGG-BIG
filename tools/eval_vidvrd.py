@@ -247,7 +247,7 @@ if __name__ == "__main__":
     python tools/eval_vidvrd.py \
         --cfg_path experiments/exp2/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth \
-        --cuda 1 \
+        --cuda 2 \
         --save_tag debug
     '''
 

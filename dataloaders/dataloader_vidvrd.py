@@ -6,12 +6,14 @@ import numpy as np
 import torch
 import pickle
 from copy import deepcopy
-
+# import root_path # uncomment this line when run this .py file (if __name__ == "__main__") 
 import random
 from collections import defaultdict
-from utils.utils_func import is_overlap, merge_duration_list,linear_interpolation
-from utils.categories_v2 import vidvrd_CatName2Id,vidvrd_PredName2Id
+from utils.utils_func import vIoU, is_overlap, merge_duration_list
+from utils.utils_func import dura_intersection,traj_cutoff,linear_interpolation
+from utils.categories import vidvrd_CatId2name,vidvrd_CatNmae2id,pred_CatId2name,pred_CatNmae2id
 
+    
 class TrajProposal(object):
     def __init__(self,video_name,
         cat_ids,traj_bboxes_with_score,traj_durations,roi_features,MAX_PROPOSAL):
@@ -140,6 +142,54 @@ class VideoGraph(object):
             self.traj_bboxes[i] = self.traj_bboxes[i].to(device)
         return self
     
+    def to_eval_format(self):
+        pred_durations = self.pred_durations.clone()
+        traj_durations = self.traj_durations.clone()
+        pred_durations[:,1] += 1
+        traj_durations[:,1] += 1
+        
+        relations = []
+        for p_id in range(self.num_preds):
+            s_id = torch.argmax(self.adj_matrix[0,p_id,:]) # subject id   \in 0 ~ num_trajs-1
+            o_id = torch.argmax(self.adj_matrix[1,p_id,:]) # object id
+            subject_catid = int(self.traj_cat_ids[s_id])
+            object_catid  = int(self.traj_cat_ids[o_id])
+            pred_catid =    int(self.pred_cat_ids[p_id])
+
+            subject_traj = self.traj_bboxes[s_id]
+            # print(type(subject_traj[0][0]))
+            object_traj = self.traj_bboxes[o_id]
+
+            subject_dura = traj_durations[s_id].tolist()
+            # print(subject_dura)
+            object_dura = traj_durations[o_id].tolist()
+            pred_dura = (int(pred_durations[p_id,0]),int(pred_durations[p_id,1]))
+
+            duration_so = dura_intersection(subject_dura,object_dura)   # duration intersection of subject and object
+            if duration_so == None:
+                continue
+            else:
+                duration_spo = dura_intersection(duration_so,pred_dura) # duration intersection of subject and object and predicate
+                if duration_spo == None:
+                    duration_spo = duration_so      #TODO  maybe we should discard this (i.e.,maybe we should `continue`)
+                else:
+                    pass
+
+            subject_traj = traj_cutoff(subject_traj,subject_dura,duration_spo)
+            object_traj = traj_cutoff(object_traj,object_dura,duration_spo)
+            assert len(subject_traj) == len(object_traj)
+            assert len(subject_traj) == duration_spo[1] - duration_spo[0]
+
+            result_per_triplet = dict()
+            result_per_triplet["triplet"] = [vidvrd_CatId2name[subject_catid],pred_CatId2name[pred_catid],vidvrd_CatId2name[object_catid]]
+            result_per_triplet["duration"] = duration_spo   # [strat_fid, end_fid)   starting (inclusive) and ending (exclusive) frame ids
+            result_per_triplet["sub_traj"] = subject_traj.cpu().numpy().tolist()     # len == duration_spo[1] - duration_spo[0]
+            result_per_triplet["obj_traj"] = object_traj.cpu().numpy().tolist()
+            result_per_triplet["debug_dura"] = {"s":subject_dura,"o":object_dura,"so":duration_so,"p":pred_dura,"spo":duration_spo}
+            relations.append(result_per_triplet)
+
+        return {self.video_name: relations}
+        
     
     def __repr__(self):
         return "VideoGraph[num_trajs={},num_preds={}]".format(self.num_trajs,self.num_preds)
@@ -157,8 +207,7 @@ class Dataset(object):
         self.max_proposal = max_proposal
         self.max_preds = max_preds
         self.cache_tag = cache_tag
-        assert cache_tag[:3].lower() == "pku"
-        self.cache_dir = "datasets/cache"
+        self.cache_dir = os.path.join(ann_dir.split('/')[0],'cache')
         if not os.path.exists(self.cache_dir):
             os.mkdir(self.cache_dir)
 
@@ -172,14 +221,14 @@ class Dataset(object):
 
         
         temp = [s for s in self.proposal_dir.split('/') if s != ""]
-        cache_file = self.cache_tag + "_" + temp[-2] + "_" + temp[-1] + "_" + self.split + "_th_{}-{}-{}".format(self.min_frames_th,self.max_proposal,self.max_preds)
+        cache_file = self.cache_tag + "_" + temp[-2] + "_" + temp[-1] + "_th_{}-{}-{}".format(self.min_frames_th,self.max_proposal,self.max_preds)
         cache_file = os.path.join(self.cache_dir,cache_file + ".pkl")
         if os.path.exists(cache_file):
             print("load all data into memory, from cache file {}".format(cache_file))
             with open(cache_file,'rb') as f:
                 data_dict = pickle.load(f)
         else:
-            print("no cache file find, preparing data...{}".format(cache_file))
+            print("no cache file find, preparing data...")
             data_dict = dict()
             for video_name in tqdm(self.video_name_list):
                 data_dict[video_name] = self.get_data(video_name)
@@ -219,7 +268,7 @@ class Dataset(object):
         traj_proposal, gt_graph = deepcopy(self.data_dict[video_name]) 
 
 
-        if traj_proposal.num_proposals > 0 or (not (self.split == "train")):
+        if traj_proposal.num_proposals > 0 or (not self.is_train):
             return traj_proposal, gt_graph
         else:
             idx = random.randint(0,len(self.video_name_list)-1)
@@ -239,9 +288,6 @@ class Dataset(object):
         return traj_proposal, gt_graph
 
     def _get_proposal(self,video_name):
-        if video_name == "ILSVRC2015_train_00884000":  # PKU missing this file, use ours instead
-            video_name = "ILSVRC2015_train_00884000" + "_myFaster18"
-
         track_res_path = os.path.join(self.proposal_dir,video_name+".npy") #ILSVRC2015_train_00010001.npy
         track_res = np.load(track_res_path,allow_pickle=True)
         trajs = {box_info[1]:{} for box_info in track_res}
@@ -254,34 +300,35 @@ class Dataset(object):
         for box_info in track_res:
             if not isinstance(box_info,list):
                 box_info = box_info.tolist()
-            assert len(box_info) == 12 + self.dim_boxfeature,"len(box_info)=={}".format(len(box_info))
+            assert len(box_info) == 6 or len(box_info) == 12 + self.dim_boxfeature,"len(box_info)=={}".format(len(box_info))
             
-            frame_id = int(box_info[0])
-            tid = int(box_info[1])
+            frame_id = box_info[0]
+            tid = box_info[1]
             tracklet_xywh = box_info[2:6]
             xmin_t,ymin_t,w_t,h_t = tracklet_xywh
             xmax_t = xmin_t + w_t
             ymax_t = ymin_t + h_t
             bbox_t = [xmin_t,ymin_t,xmax_t,ymax_t]
-            confidence = box_info[6]
-            cat_id = int(box_info[7])
-            if cat_id <= 0:
-                confidence = 0.0
-                bbox = bbox_t + [confidence]
-                roi_feature = [0]*self.dim_boxfeature
-            else:
+            confidence = float(0)
+            if len(box_info) == 12 + self.dim_boxfeature:
+                confidence = box_info[6]
+                cat_id = box_info[7]
                 xywh = box_info[8:12]
                 xmin,ymin,w,h = xywh
                 xmax = xmin+w
                 ymax = ymin+h
-                bbox = [(xmin+xmin_t)/2, (ymin+ymin_t)/2, (xmax+xmax_t)/2,(ymax+ymax_t)/2,confidence]
+                bbox = [(xmin+xmin_t)/2, (ymin+ymin_t)/2, (xmax+xmax_t)/2,(ymax+ymax_t)/2]
                 roi_feature = box_info[12:]
                 trajs[tid]["category_id"].append(cat_id)
-
+                trajs[tid]["roi_features"].append(roi_feature)
             
-            
-            trajs[tid]["bboxes"].append(bbox)
-            trajs[tid]["roi_features"].append(roi_feature)
+            if len(box_info) == 6:
+                bbox_t.append(confidence)
+                trajs[tid]["bboxes"].append(bbox_t)
+                trajs[tid]["roi_features"].append([0]*self.dim_boxfeature)
+            else:
+                bbox.append(confidence)
+                trajs[tid]["bboxes"].append(bbox)
             trajs[tid]["frame_ids"].append(frame_id)    # 
     
 
@@ -289,7 +336,7 @@ class Dataset(object):
             if trajs[tid]["category_id"] == []:
                 trajs[tid]["category_id"] = 0
             else:
-                # print(video_name,trajs[tid]["category_id"])
+                # print(trajs[tid]["category_id"])
                 temp = np.argmax(np.bincount(trajs[tid]["category_id"]))  # 求众数
                 trajs[tid]["category_id"] = int(temp)
             
@@ -360,7 +407,7 @@ class Dataset(object):
             for bbox_anno in frame_anno:
                 tid = bbox_anno["tid"]
                 category_name = tid2category_map[tid]
-                category_id = vidvrd_CatName2Id[category_name]
+                category_id = vidvrd_CatNmae2id[category_name]
 
                 bbox = bbox_anno["bbox"]
                 bbox = [bbox["xmin"],bbox["ymin"],bbox["xmax"],bbox["ymax"]]
@@ -416,7 +463,7 @@ class Dataset(object):
             trituple2durations_dict[trituple] = merged_durations
 
             pred_name = trituple.split('-')[1]
-            pred_catid = vidvrd_PredName2Id[pred_name]
+            pred_catid = pred_CatNmae2id[pred_name]
 
             for duration in merged_durations:
                 trituple_list.append(trituple)
@@ -486,113 +533,3 @@ class Dataset(object):
 
 
 
-class Dataset_i3d(Dataset):
-    def __init__(self, i3d_dir, dim_i3d, **kargs):
-        self.i3d_dir = i3d_dir
-        self.dim_i3d = dim_i3d
-
-        super().__init__(**kargs)  # 会调用子类重载的成员函数
-    
-    def _get_proposal(self,video_name):
-        if video_name == "ILSVRC2015_train_00884000":
-            video_name = "ILSVRC2015_train_00884000" + "_myFaster18"
-        i3d_path = os.path.join(self.i3d_dir,video_name+".npy")
-        i3d_features = np.load(i3d_path)
-        track_res_path = os.path.join(self.proposal_dir,video_name+".npy") #ILSVRC2015_train_00010001.npy
-        track_res = np.load(track_res_path,allow_pickle=True)
-        trajs = {box_info[1]:{} for box_info in track_res}
-        for tid in trajs.keys():  
-            trajs[tid]["frame_ids"] = []
-            trajs[tid]["bboxes"] = []
-            trajs[tid]["roi_features"] = []
-            trajs[tid]["i3d_features"] = []
-            trajs[tid]["category_id"] = []   # 如果某个tid只有len==6的box_info，那就无法获取 category_id ，默认为背景
-
-        for idx,box_info in enumerate(track_res):
-            if not isinstance(box_info,list):
-                box_info = box_info.tolist()
-            assert len(box_info) == 12 + self.dim_boxfeature,"len(box_info)=={}".format(len(box_info))
-            
-            frame_id = int(box_info[0])
-            tid = int(box_info[1])
-            tracklet_xywh = box_info[2:6]
-            xmin_t,ymin_t,w_t,h_t = tracklet_xywh
-            xmax_t = xmin_t + w_t
-            ymax_t = ymin_t + h_t
-            bbox_t = [xmin_t,ymin_t,xmax_t,ymax_t]
-            confidence = box_info[6]
-            cat_id = int(box_info[7])
-            if cat_id <= 0:
-                confidence = 0.0
-                bbox = bbox_t + [confidence]
-                roi_feature = [0]*self.dim_boxfeature
-                i3d_feature = [0]*self.dim_i3d
-            else:
-                xywh = box_info[8:12]
-                xmin,ymin,w,h = xywh
-                xmax = xmin+w
-                ymax = ymin+h
-                bbox = [(xmin+xmin_t)/2, (ymin+ymin_t)/2, (xmax+xmax_t)/2,(ymax+ymax_t)/2,confidence]
-                roi_feature = box_info[12:]
-                i3d_feature = i3d_features[idx][12:]
-                trajs[tid]["category_id"].append(cat_id)
-
-            
-            if video_name  == "ILSVRC2015_train_00884000" + "_myFaster18":
-                i3d_feature = [0]*self.dim_i3d
-            trajs[tid]["bboxes"].append(bbox)
-            trajs[tid]["roi_features"].append(roi_feature)
-            trajs[tid]["i3d_features"].append(i3d_feature)
-            trajs[tid]["frame_ids"].append(frame_id)    # 
-    
-        # print(video_name)
-        for tid in trajs.keys():
-            if trajs[tid]["category_id"] == []:
-                trajs[tid]["category_id"] = 0
-            else:
-                # print(video_name,trajs[tid]["category_id"])
-                temp = np.argmax(np.bincount(trajs[tid]["category_id"]))  # 求众数
-                trajs[tid]["category_id"] = int(temp)
-            
-            frame_ids = trajs[tid]["frame_ids"]
-            start = min(frame_ids)
-            end = max(frame_ids) + 1
-            dura_len = end - start
-            duration = (start,end)  # 前闭后开区间
-            roi_feature = np.array(trajs[tid]["roi_features"])
-            i3d_feature = np.array(trajs[tid]["i3d_features"]) # list of np.array --> 2d-numpy array
-            # concatenate i3d_features and visual_feature
-            trajs[tid]["roi_features"] = np.concatenate([roi_feature,i3d_feature],axis=-1)  # shape == (n_frames,2048+832)
-            # print(trajs[tid]["box_feats"].shape)
-            trajs[tid]["bboxes"] = np.array(trajs[tid]["bboxes"])
-
-            # 将太短的视为背景，后续过滤掉
-            if len(frame_ids) < self.min_frames_th:
-                trajs[tid]["category_id"] = 0
-            else:
-                trajs[tid]["duration"] = (start,end)
-            
-            # 对于非背景的traj， 看是否需要插值
-            if trajs[tid]["category_id"] !=0 and len(frame_ids) != dura_len:
-                trajs[tid]["roi_features"] = linear_interpolation(trajs[tid]["roi_features"],frame_ids)
-                trajs[tid]["bboxes"] = linear_interpolation(trajs[tid]["bboxes"],frame_ids)
-            
-            if trajs[tid]["category_id"] !=0:
-                assert len(trajs[tid]["bboxes"]) == dura_len
-
-        # trajs = {k:v for k,v in trajs.items() if v["category_id"]!=0}
-        cat_ids = []
-        traj_boxes = []
-        roi_features_list = []
-        traj_durations = []
-        for tid in trajs.keys():
-            if trajs[tid]["category_id"] != 0:
-                dura_len = trajs[tid]["duration"][1] - trajs[tid]["duration"][0]
-                assert len(trajs[tid]["bboxes"]) == dura_len
-                cat_ids.append(trajs[tid]["category_id"])
-                traj_boxes.append(trajs[tid]["bboxes"])
-                roi_features_list.append(trajs[tid]["roi_features"])
-                traj_durations.append(trajs[tid]["duration"])
-        
-        return TrajProposal(video_name,cat_ids,traj_boxes,traj_durations,roi_features_list,self.max_proposal)
-    

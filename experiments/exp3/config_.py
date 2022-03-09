@@ -7,9 +7,8 @@ model_config = dict(
     dim_enti        = 512,
     dim_pred        = 512,
     dim_att         = 512,
-    dim_feat        = 2048,         # dimension of each bbox's RoI feature, depend on the detector
+    dim_feat        = 1024,         # dimension of each bbox's RoI feature, depend on the detector
     dim_clsme       = 300,
-    dim_i3d         = 832,
     enco_pool_len   = 4,
     n_enco_layers   = 2,
     n_deco_layers   = 6,
@@ -28,38 +27,34 @@ model_config = dict(
         adj_matrix          = 30.0,
     )
 )
+
 train_dataset_config = dict(
     split = "train",
     ann_dir = "/home/gkf/project/VideoGraph/datasets/vidvrd-dataset",
-    proposal_dir = "/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking",
-    i3d_dir = "proposals/vidvrd-dataset/PKU_beyond/videovrd_i3d",
-    dim_i3d = 832,
-    dim_boxfeature = 2048,
+    proposal_dir = "/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/miss30_minscore0p3/VidVRD_train_every1frames",
+    dim_boxfeature = 1024,
     min_frames_th = 5,
     max_proposal = 50,
     max_preds = 100,
-    cache_tag = "PKU_v2"
+    cache_tag = "MEGA"
 )
 
 
 test_dataset_config = dict(
     split = "test",
     ann_dir = "/home/gkf/project/VideoGraph/datasets/vidvrd-dataset",
-    proposal_dir = "/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking",
-    i3d_dir = "/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_i3d",
-    dim_i3d = 832,
-    dim_boxfeature = 2048,
+    proposal_dir = "/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/miss30_minscore0p3/VidVRD_test_every1frames",
+    dim_boxfeature = 1024,
     min_frames_th = 5,
-    max_proposal = 50,
+    max_proposal = 150,
     max_preds = 100,
-    cache_tag = "PKU_v2"
+    cache_tag = "MEGA"
 )
 
-## train-dataset cache_tag: v7_with_clsme
 
 train_config = dict(
     batch_size          = 8,
-    total_epoch         = 100,
+    total_epoch         = 120,
     initial_lr          = 1e-4,
     lr_decay            = 0.2,
     epoch_lr_milestones = [80],
@@ -70,4 +65,5 @@ inference_config = dict(
 )
 
 if __name__ == "__main__":
-    pass
+    xx1 = "/home/gkf/VidSGG/tools/vidvrd_EntiNameEmb.npy"
+    xx2 = "tools/vidvrd_EntiNameEmb.npy"

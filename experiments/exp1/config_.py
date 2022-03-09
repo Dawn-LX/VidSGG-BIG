@@ -1,6 +1,5 @@
 
 model_config = dict(
-    dataset_type    = "VidVRD",
     num_enti_cats   = 36,
     num_pred_cats   = 133,
     dim_ffn         = 512,
@@ -35,7 +34,6 @@ train_dataset_config = dict(
     min_frames_th = 5,
     max_proposal = 50,
     max_preds = 100,
-    # original setting for MM_paper1933, min_frames_th=5,max_proposal=50,max_preds=100,no score_th cliping
     cache_tag = "PKU_v1"
 )
 
@@ -48,7 +46,6 @@ test_dataset_config = dict(
     min_frames_th = 5,
     max_proposal = 50,
     max_preds = 100,
-    # original setting for MM_paper1933, min_frames_th=5,max_proposal=50,max_preds=100,no score_th cliping
     cache_tag = "PKU_v1"
 )
 

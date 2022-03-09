@@ -49,3 +49,42 @@
 2022-03-09 00:19:35,666 - detection recall: {50: 0.097097516, 100: 0.11359365}
 2022-03-09 00:19:35,666 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
 2022-03-09 00:19:35,666 - log file have been saved at experiments/exp2/logfile/eval_debug.log
+2022-03-09 00:46:37,803 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'dim_i3d': 832, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 00:46:37,804 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'i3d_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_i3d', 'dim_i3d': 832, 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v2'}
+2022-03-09 00:46:37,804 - {'topk': 10}
+2022-03-09 00:47:16,611 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'dim_i3d': 832, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 00:47:16,611 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'i3d_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_i3d', 'dim_i3d': 832, 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v2'}
+2022-03-09 00:47:16,611 - {'topk': 10}
+2022-03-09 00:48:04,554 - start inference...
+2022-03-09 00:48:04,555 - infer_config:{'topk': 10}
+2022-03-09 00:48:04,555 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth
+2022-03-09 00:48:17,507 - start convert format for evaluate...
+2022-03-09 00:48:28,886 - For part:**overall**, Computing average precision AP over 200 videos...
+2022-03-09 00:48:33,274 - detection mean AP (used in challenge): 0.17686903267712473
+2022-03-09 00:48:33,274 - detection recall: {50: 0.097097516, 100: 0.11359365}
+2022-03-09 00:48:33,275 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
+2022-03-09 00:48:33,275 - log file have been saved at experiments/exp2/logfile/eval_debug.log
+2022-03-09 00:52:39,098 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'dim_i3d': 832, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 00:52:39,098 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'i3d_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_i3d', 'dim_i3d': 832, 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v2'}
+2022-03-09 00:52:39,098 - {'topk': 10}
+2022-03-09 00:52:46,699 - start inference...
+2022-03-09 00:52:46,699 - infer_config:{'topk': 10}
+2022-03-09 00:52:46,699 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth
+2022-03-09 00:53:00,189 - start convert format for evaluate...
+2022-03-09 00:53:12,416 - For part:**overall**, Computing average precision AP over 200 videos...
+2022-03-09 00:53:16,928 - detection mean AP (used in challenge): 0.17686903267712473
+2022-03-09 00:53:16,928 - detection recall: {50: 0.097097516, 100: 0.11359365}
+2022-03-09 00:53:16,928 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
+2022-03-09 00:53:16,928 - log file have been saved at experiments/exp2/logfile/eval_debug.log
+2022-03-09 00:53:33,148 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'dim_i3d': 832, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 00:53:33,148 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'i3d_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_i3d', 'dim_i3d': 832, 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v2'}
+2022-03-09 00:53:33,149 - {'topk': 10}
+2022-03-09 00:54:24,240 - start inference...
+2022-03-09 00:54:24,240 - infer_config:{'topk': 10}
+2022-03-09 00:54:24,240 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth
+2022-03-09 00:54:37,514 - start convert format for evaluate...
+2022-03-09 00:54:48,729 - For part:**overall**, Computing average precision AP over 200 videos...
+2022-03-09 00:54:53,175 - detection mean AP (used in challenge): 0.17686903267712473
+2022-03-09 00:54:53,175 - detection recall: {50: 0.097097516, 100: 0.11359365}
+2022-03-09 00:54:53,175 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
+2022-03-09 00:54:53,175 - log file have been saved at experiments/exp2/logfile/eval_debug.log
