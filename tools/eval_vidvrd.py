@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 # from importlib import import_module
 # from dataloaders.dataloader_vidvrd_pkuv2 import Dataset
-from dataloaders.dataloader_vidvrd_pku import Dataset
+from dataloaders.dataloader_vidvrd_pku import Dataset,Dataset_i3d
 
 from models import BIG_C_vidvrd
 # from models import BIG_C_vidvrd_i3d
@@ -95,7 +95,12 @@ def inference_then_eval(
     model.eval()
 
     ## construct dataset
-    dataset = Dataset(**dataset_config)
+    use_i3d = dataset_config.get("i3d_dir",None) is not None
+    if use_i3d:
+        dataset = Dataset_i3d(**dataset_config)
+    else:
+        dataset = Dataset(**dataset_config)        
+    
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=1,
