@@ -11,11 +11,10 @@ from tqdm import tqdm
 
 
 # from importlib import import_module
-# from dataloaders.dataloader_vidvrd_pkuv2 import Dataset
-from dataloaders.dataloader_vidvrd_pku import Dataset,Dataset_i3d
+from dataloaders.dataloader_vidvrd import Dataset,Dataset_pku,Dataset_pku_i3d
+# from dataloaders.dataloader_vidvrd_pku import Dataset,Dataset_i3d
 
 from models import BIG_C_vidvrd
-# from models import BIG_C_vidvrd_i3d
 from utils.evaluate import EvalFmtCvtor
 from utils.utils_func import create_logger,parse_config_py
 from VidVRDhelperEvalAPIs import eval_visual_relation
@@ -94,12 +93,16 @@ def inference_then_eval(
     model.load_state_dict(state_dict_)
     model.eval()
 
+
     ## construct dataset
-    use_i3d = dataset_config.get("i3d_dir",None) is not None
-    if use_i3d:
-        dataset = Dataset_i3d(**dataset_config)
+    if use_pku:
+        use_i3d = dataset_config.get("i3d_dir",None) is not None
+        if use_i3d:
+            dataset = Dataset_pku_i3d(**dataset_config)
+        else:
+            dataset = Dataset_pku(**dataset_config)        
     else:
-        dataset = Dataset(**dataset_config)        
+        dataset = Dataset(**dataset_config)
     
     dataloader = torch.utils.data.DataLoader(
         dataset,
@@ -229,7 +232,7 @@ if __name__ == "__main__":
         args.cfg_path,
         args.ckpt_path,
         save_tag=args.save_tag,
-        use_pku=True,
+        use_pku=args.use_pku,
         experiment_dir=args.output_dir,
         gpu_id = args.cuda,
         save_infer_result=False,
@@ -240,6 +243,7 @@ if __name__ == "__main__":
     python tools/eval_vidvrd.py \
         --cfg_path experiments/exp1/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth \
+        --use_pku \
         --cuda 1 \
         --save_tag debug
     
@@ -247,8 +251,17 @@ if __name__ == "__main__":
     python tools/eval_vidvrd.py \
         --cfg_path experiments/exp2/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth \
+        --use_pku \
         --cuda 2 \
         --save_tag debug
+    
+    ### exp3
+    python tools/eval_vidvrd.py \
+        --cfg_path experiments/exp3/config_.py \
+        --ckpt_path /home/gkf/project/VidSGG-BIG/experiments/exp3/model_epoch_80.pth \
+        --cuda 3 \
+        --save_tag debug
+    
     '''
 
     ##### ablation for PKU RoI+I3D

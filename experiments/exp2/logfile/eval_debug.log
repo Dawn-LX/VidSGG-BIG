@@ -88,3 +88,15 @@
 2022-03-09 00:54:53,175 - detection recall: {50: 0.097097516, 100: 0.11359365}
 2022-03-09 00:54:53,175 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
 2022-03-09 00:54:53,175 - log file have been saved at experiments/exp2/logfile/eval_debug.log
+2022-03-09 02:11:02,383 - {'num_enti_cats': 36, 'num_pred_cats': 133, 'dim_ffn': 512, 'dim_enti': 512, 'dim_pred': 512, 'dim_att': 512, 'dim_feat': 2048, 'dim_clsme': 300, 'dim_i3d': 832, 'enco_pool_len': 4, 'n_enco_layers': 2, 'n_deco_layers': 6, 'n_att_head': 8, 'num_querys': 192, 'neg_weight': 0.1, 'positive_vIoU_th': 0.5, 'EntiNameEmb_path': 'prepared_data/vidvrd_EntiNameEmb_pku.npy', 'bias_matrix_path': 'prepared_data/pred_bias_matrix_vidvrd_pku.npy', 'cost_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}, 'loss_coeff_dict': {'classification': 1.0, 'adj_matrix': 30.0}}
+2022-03-09 02:11:02,383 - {'split': 'test', 'ann_dir': '/home/gkf/project/VideoGraph/datasets/vidvrd-dataset', 'proposal_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_detect_tracking', 'i3d_dir': '/home/gkf/project/VideoGraph/proposals/vidvrd-dataset/PKU_beyond/videovrd_i3d', 'dim_i3d': 832, 'dim_boxfeature': 2048, 'min_frames_th': 5, 'max_proposal': 50, 'max_preds': 100, 'cache_tag': 'PKU_v2'}
+2022-03-09 02:11:02,383 - {'topk': 10}
+2022-03-09 02:11:53,237 - start inference...
+2022-03-09 02:11:53,238 - infer_config:{'topk': 10}
+2022-03-09 02:11:53,238 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth
+2022-03-09 02:12:06,937 - start convert format for evaluate...
+2022-03-09 02:12:19,217 - For part:**overall**, Computing average precision AP over 200 videos...
+2022-03-09 02:12:23,935 - detection mean AP (used in challenge): 0.17686903267712473
+2022-03-09 02:12:23,935 - detection recall: {50: 0.097097516, 100: 0.11359365}
+2022-03-09 02:12:23,935 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
+2022-03-09 02:12:23,935 - log file have been saved at experiments/exp2/logfile/eval_debug.log
