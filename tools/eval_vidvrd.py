@@ -185,6 +185,9 @@ def inference_then_eval(
 
 
 def replace_state_dict_keys(state_dict):
+    """
+    This func is for debug
+    """
     state_dict_new = {}
     for name,v in state_dict.items():
         if name == "pred_nodes_init":
