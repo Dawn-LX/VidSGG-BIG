@@ -1,2 +1,2 @@
 # TODO
-the code is still being organizing ...
+the code is still being organized
