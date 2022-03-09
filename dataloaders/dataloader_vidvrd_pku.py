@@ -536,3 +536,113 @@ class Dataset(object):
 
 
 
+class Dataset_i3d(Dataset):
+    def __init__(self, i3d_dir, dim_i3d, **kargs):
+        self.i3d_dir = i3d_dir
+        self.dim_i3d = dim_i3d
+
+        super().__init__(**kargs)  # 会调用子类重载的成员函数
+    
+    def _get_proposal(self,video_name):
+        if video_name == "ILSVRC2015_train_00884000":
+            video_name = "ILSVRC2015_train_00884000" + "_myFaster18"
+        i3d_path = os.path.join(self.i3d_dir,video_name+".npy")
+        i3d_features = np.load(i3d_path)
+        track_res_path = os.path.join(self.proposal_dir,video_name+".npy") #ILSVRC2015_train_00010001.npy
+        track_res = np.load(track_res_path,allow_pickle=True)
+        trajs = {box_info[1]:{} for box_info in track_res}
+        for tid in trajs.keys():  
+            trajs[tid]["frame_ids"] = []
+            trajs[tid]["bboxes"] = []
+            trajs[tid]["roi_features"] = []
+            trajs[tid]["i3d_features"] = []
+            trajs[tid]["category_id"] = []   # 如果某个tid只有len==6的box_info，那就无法获取 category_id ，默认为背景
+
+        for idx,box_info in enumerate(track_res):
+            if not isinstance(box_info,list):
+                box_info = box_info.tolist()
+            assert len(box_info) == 12 + self.dim_boxfeature,"len(box_info)=={}".format(len(box_info))
+            
+            frame_id = int(box_info[0])
+            tid = int(box_info[1])
+            tracklet_xywh = box_info[2:6]
+            xmin_t,ymin_t,w_t,h_t = tracklet_xywh
+            xmax_t = xmin_t + w_t
+            ymax_t = ymin_t + h_t
+            bbox_t = [xmin_t,ymin_t,xmax_t,ymax_t]
+            confidence = box_info[6]
+            cat_id = int(box_info[7])
+            if cat_id <= 0:
+                confidence = 0.0
+                bbox = bbox_t + [confidence]
+                roi_feature = [0]*self.dim_boxfeature
+                i3d_feature = [0]*self.dim_i3d
+            else:
+                xywh = box_info[8:12]
+                xmin,ymin,w,h = xywh
+                xmax = xmin+w
+                ymax = ymin+h
+                bbox = [(xmin+xmin_t)/2, (ymin+ymin_t)/2, (xmax+xmax_t)/2,(ymax+ymax_t)/2,confidence]
+                roi_feature = box_info[12:]
+                i3d_feature = i3d_features[idx][12:]
+                trajs[tid]["category_id"].append(cat_id)
+
+            
+            if video_name  == "ILSVRC2015_train_00884000" + "_myFaster18":
+                i3d_feature = [0]*self.dim_i3d
+            trajs[tid]["bboxes"].append(bbox)
+            trajs[tid]["roi_features"].append(roi_feature)
+            trajs[tid]["i3d_features"].append(i3d_feature)
+            trajs[tid]["frame_ids"].append(frame_id)    # 
+    
+        # print(video_name)
+        for tid in trajs.keys():
+            if trajs[tid]["category_id"] == []:
+                trajs[tid]["category_id"] = 0
+            else:
+                # print(video_name,trajs[tid]["category_id"])
+                temp = np.argmax(np.bincount(trajs[tid]["category_id"]))  # 求众数
+                trajs[tid]["category_id"] = int(temp)
+            
+            frame_ids = trajs[tid]["frame_ids"]
+            start = min(frame_ids)
+            end = max(frame_ids) + 1
+            dura_len = end - start
+            duration = (start,end)  # 前闭后开区间
+            roi_feature = np.array(trajs[tid]["roi_features"])
+            i3d_feature = np.array(trajs[tid]["i3d_features"]) # list of np.array --> 2d-numpy array
+            # concatenate i3d_features and visual_feature
+            trajs[tid]["roi_features"] = np.concatenate([roi_feature,i3d_feature],axis=-1)  # shape == (n_frames,2048+832)
+            # print(trajs[tid]["box_feats"].shape)
+            trajs[tid]["bboxes"] = np.array(trajs[tid]["bboxes"])
+
+            # 将太短的视为背景，后续过滤掉
+            if len(frame_ids) < self.min_frames_th:
+                trajs[tid]["category_id"] = 0
+            else:
+                trajs[tid]["duration"] = (start,end)
+            
+            # 对于非背景的traj， 看是否需要插值
+            if trajs[tid]["category_id"] !=0 and len(frame_ids) != dura_len:
+                trajs[tid]["roi_features"] = linear_interpolation(trajs[tid]["roi_features"],frame_ids)
+                trajs[tid]["bboxes"] = linear_interpolation(trajs[tid]["bboxes"],frame_ids)
+            
+            if trajs[tid]["category_id"] !=0:
+                assert len(trajs[tid]["bboxes"]) == dura_len
+
+        # trajs = {k:v for k,v in trajs.items() if v["category_id"]!=0}
+        cat_ids = []
+        traj_boxes = []
+        roi_features_list = []
+        traj_durations = []
+        for tid in trajs.keys():
+            if trajs[tid]["category_id"] != 0:
+                dura_len = trajs[tid]["duration"][1] - trajs[tid]["duration"][0]
+                assert len(trajs[tid]["bboxes"]) == dura_len
+                cat_ids.append(trajs[tid]["category_id"])
+                traj_boxes.append(trajs[tid]["bboxes"])
+                roi_features_list.append(trajs[tid]["roi_features"])
+                traj_durations.append(trajs[tid]["duration"])
+        
+        return TrajProposal(video_name,cat_ids,traj_boxes,traj_durations,roi_features_list,self.max_proposal)
+    

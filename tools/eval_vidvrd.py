@@ -11,8 +11,8 @@ from tqdm import tqdm
 
 
 # from importlib import import_module
-from dataloaders.dataloader_vidvrd_pkuv2 import Dataset
-# from dataloaders.dataloader_vidvrd_pku import Dataset
+# from dataloaders.dataloader_vidvrd_pkuv2 import Dataset
+from dataloaders.dataloader_vidvrd_pku import Dataset
 
 from models import BIG_C_vidvrd
 # from models import BIG_C_vidvrd_i3d
@@ -218,9 +218,6 @@ if __name__ == "__main__":
     parser.add_argument("--json_results_path", type=str,help="...")
     parser.add_argument("--use_pku",action="store_true",default=False,help="...")
     args = parser.parse_args()
-
-    cfg_path = "experiments/exp1/config_.py"
-    weight_path = "training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth"
 
 
     inference_then_eval(

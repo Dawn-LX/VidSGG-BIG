@@ -23,6 +23,7 @@ _ext
 # local files
 backup_files/
 cache/
+test_gramma/
 
 # Pycharm editor settings
 .idea
