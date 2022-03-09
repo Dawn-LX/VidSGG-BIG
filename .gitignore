@@ -10,12 +10,14 @@ _ext
 *.npy
 *.json
 
+# log files
+*.log
+
 # ipython/jupyter notebooks
 *.ipynb
 **/.ipynb_checkpoints/
 
 # NOTES
-
 *notes.md
 
 # local files

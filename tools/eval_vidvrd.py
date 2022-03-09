@@ -234,13 +234,14 @@ if __name__ == "__main__":
         save_relation_json=False
     )
     '''
+    ### exp1
     python tools/eval_vidvrd.py \
         --cfg_path experiments/exp1/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth \
         --cuda 1 \
         --save_tag debug
     
-
+    ### exp2
     python tools/eval_vidvrd.py \
         --cfg_path experiments/exp2/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth \
