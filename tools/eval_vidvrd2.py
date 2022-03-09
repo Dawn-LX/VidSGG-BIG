@@ -240,6 +240,12 @@ if __name__ == "__main__":
         --cuda 1 \
         --save_tag debug
     
+    2022-03-09 02:41:18,550 - detection mean AP (used in challenge): 0.1756102305112229
+    2022-03-09 02:41:18,551 - detection recall: {50: 0.095966905, 100: 0.109203726}
+    2022-03-09 02:41:18,551 - tagging precision: {1: 0.565, 5: 0.4430000091344118, 10: 0.32350000478327273}
+    2022-03-09 02:41:18,668 - log file have been saved at experiments/exp1/logfile/eval_debug.log
+    
+    
     ### exp2
     python tools/eval_vidvrd2.py \
         --cfg_path experiments/exp2/config_.py \
@@ -248,11 +254,20 @@ if __name__ == "__main__":
         --cuda 2 \
         --save_tag debug
     
+    2022-03-09 02:39:43,260 - detection mean AP (used in challenge): 0.17679591933675462
+    2022-03-09 02:39:43,261 - detection recall: {50: 0.09638056, 100: 0.11292658}
+    2022-03-09 02:39:43,261 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
+
+    
     ### exp3
     python tools/eval_vidvrd2.py \
         --cfg_path experiments/exp3/config_.py \
         --ckpt_path /home/gkf/project/VidSGG-BIG/experiments/exp3/model_epoch_80.pth \
         --cuda 3 \
         --save_tag debug
-
+    
+    2022-03-09 02:41:30,289 - detection mean AP (used in challenge): 0.26088200440572606
+    2022-03-09 02:41:30,289 - detection recall: {50: 0.14105481, 100: 0.16256464}
+    2022-03-09 02:41:30,289 - tagging precision: {1: 0.73, 5: 0.551, 10: 0.4}
+    2022-03-09 02:41:30,400 - log file have been saved at experiments/exp3/logfile/eval_debug.log
     '''

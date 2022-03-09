@@ -118,3 +118,7 @@
 2022-03-09 02:39:15,334 - start inference...
 2022-03-09 02:39:15,335 - infer_config:{'topk': 10}
 2022-03-09 02:39:15,335 - weight_path:/home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth
+2022-03-09 02:39:43,260 - detection mean AP (used in challenge): 0.17679591933675462
+2022-03-09 02:39:43,261 - detection recall: {50: 0.09638056, 100: 0.11292658}
+2022-03-09 02:39:43,261 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
+2022-03-09 02:39:43,361 - log file have been saved at experiments/exp2/logfile/eval_debug.log
