@@ -113,7 +113,7 @@ def inference_then_eval(
     logger.info("infer_config:{}".format(infer_config))
     logger.info("weight_path:{}".format(weight_path))
 
-    convertor = EvalFmtCvtor("vidvrd",eval_separately=False)
+    convertor = EvalFmtCvtor("vidvrd")
     predict_relations = {}
     infer_result_for_save = {}
     for proposal_list,gt_graph_list in tqdm(dataloader):
@@ -143,7 +143,6 @@ def inference_then_eval(
         res = [x.cpu() for x in batch_triplets[0]]  # for debug
         infer_result_for_save[video_name] = res     # for debug
 
-        # for eval overall
         pr_result = convertor.to_eval_format_pr(proposal,infer_result,use_pku=use_pku)
         predict_relations.update(pr_result)
 

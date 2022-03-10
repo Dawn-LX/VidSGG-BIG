@@ -148,7 +148,7 @@ def inference_then_eval(
     logger.info("start convert format for evaluate...")
 
 
-    convertor_all = EvalFmtCvtor("vidvrd",eval_separately=False)
+    convertor_all = EvalFmtCvtor("vidvrd")
     
     gt_relations = {}
     predict_relations = {}
@@ -159,14 +159,13 @@ def inference_then_eval(
 
         pr_triplet = infer_result[proposal.video_name]
         
-        # for eval overall
         pr_result = convertor_all.to_eval_format_pr(proposal,pr_triplet,use_pku=use_pku)
         predict_relations.update(pr_result) 
         gt_result = convertor_all.to_eval_format_gt(gt_graph)
-        gt_relations.update(gt_result["overall"])
+        gt_relations.update(gt_result)
     
 
-    logger.info('For part:**overall**, Computing average precision AP over {} videos...'.format(len(gt_relations)))
+    logger.info('Computing average precision AP over {} videos...'.format(len(gt_relations)))
     mean_ap, rec_at_n, mprec_at_n = eval_visual_relation(gt_relations,predict_relations,viou_threshold=0.5)
     
 
