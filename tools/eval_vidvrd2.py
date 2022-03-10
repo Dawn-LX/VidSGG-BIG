@@ -12,16 +12,13 @@ import torch
 from dataloaders.dataloader_vidvrd import Dataset,Dataset_pku,Dataset_pku_i3d
 from models import BIG_C_vidvrd
 from utils.evaluate import EvalFmtCvtor
-from utils.utils_func import create_logger,parse_config_py
+from utils.utils_func import create_logger,parse_config_py,load_json
 from VidVRDhelperEvalAPIs import eval_visual_relation
 
 torch.set_printoptions(sci_mode=False,precision=4,linewidth=160)
 
 
-def load_json(path):
-    with open(path,'r') as f:
-        x = json.load(f)
-    return x
+
 
 def load_checkpoint(model,optimizer,scheduler,ckpt_path):
     checkpoint = torch.load(ckpt_path,map_location=torch.device('cpu'))

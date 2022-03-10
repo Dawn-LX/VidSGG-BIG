@@ -5,6 +5,7 @@ import sys
 from importlib import import_module
 
 import numpy as np
+import json
 import cv2
 import torch
 import logging
@@ -40,6 +41,10 @@ def parse_config_py(filename):
         temp_config_file.close()
     return cfg_dict
 
+def load_json(path):
+    with open(path,'r') as f:
+        x = json.load(f)
+    return x
 
 def stack_with_padding(tensor_list,dim,value=0,rt_mask=False):
     """
@@ -646,126 +651,3 @@ def is_overlap(dura1,dura2):
     else:
         return True
 
-
-def collator_func_v1(batch):
-    """
-    batch is a list ,len(batch) == batch_size
-    batch[i] is a tuple, batch[i][0],batch[i][1] is an object of class TrajProposal, class VideoGraph, respectively
-    This function should be passed to the torch.utils.data.DataLoader
-
-    return:
-
-    """
-    batch_size = len(batch)
-    batch_proposal = [b[0] for b in batch]
-    batch_gt_graph = [b[1] for b in batch]
-
-    # process of proposals
-    proposal_num_list = [b[1].num_proposals for b in batch]
-    max_n_proposal = max(proposal_num_list)
-    batch_cat_ids = []
-    batch_traj_boxes = []
-    batch_durations = []
-    batch_roi_features = []
-    for traj in batch_proposal:
-        batch_cat_ids.append(traj.cat_ids)
-        batch_traj_boxes.append(traj.traj_boxes)
-        batch_durations.append(traj.traj_durations)
-        
-        n_p,dim_feat = traj.roi_features.shape               # shape == (num_proposals, dim_feat)
-        after_padding = np.zeros(shape=(max_n_proposal,dim_feat))
-        after_padding[:n_p,:] = traj.roi_features
-        batch_roi_features.append(after_padding)     
-    batch_roi_features = np.stack(batch_roi_features,axis=0) # shape == (batch_size,max_n_proposal,dim_feat) 
-
-    proposal_dict = {
-        "proposal_num_list":proposal_num_list,  # list[int], len==batch_size
-        "cat_ids":batch_cat_ids,                # list[list[int]], outside_len==batch_size,inside_len==num_proposals
-        "traj_boxes":batch_traj_boxes,          # list[list[np.ndarray]], outside_len==batch_size,inside_len==num_proposals, np.ndarray.shape==(num_frames,4) #TODO consider zeropadding
-        "durations":batch_durations,            # list[list[tuple]],outside_len==batch_size,inside_len==num_proposals, tuple==(start_framd_id,end_frame_id)
-        "roi_features":batch_roi_features       # np.ndarray, shape == (batch_size,max_n_proposal,dim_feat), with zero padding
-    }
-
-    # process of gt_graphs
-    batch_traj_cat_ids = []
-    batch_traj_durations = []
-    batch_traj_bboxes = []
-
-    batch_pred_cat_ids = []
-    batch_pred_durations = []
-    for graph in batch_gt_graph:
-        batch_traj_cat_ids.append(graph.traj_cat_ids)
-        batch_pred_cat_ids.append(graph.pred_cat_ids)
-        # TODO 未完待续
-        # self. = traj_cat_ids
-        # self. = traj_durations
-        # self. = traj_bboxes
-
-        # self.pred_cat_ids = pred_cat_ids
-        # self. = pred_durations
-
-        # assert adj_matrix_object.shape == adj_matrix_subject.shape
-        # self.adj_matrix = np.stack([adj_matrix_subject,adj_matrix_object],axis=0)   # shape = (2,num_preds,num_trajs)
-    
-    return batch
-
-
-def collator_func_v2(batch):
-    """
-    batch is a list ,len(batch) == batch_size
-    batch[i] is a tuple, batch[i][0],batch[i][1] is an object of class TrajProposal, class VideoGraph, respectively
-    This function should be passed to the torch.utils.data.DataLoader
-
-    """
-    # batch_size = len(batch)
-    batch_proposal = [b[0] for b in batch]
-    batch_gt_graph = [b[1] for b in batch]
-
-    return batch_proposal,batch_gt_graph
-
-
-def collator_func_sort(batch):
-    """
-    batch is a list ,len(batch) == batch_size
-    batch[i] is a tuple, batch[i][0],batch[i][1] is an object of class TrajProposal, class VideoGraph, respectively
-    This function should be passed to the torch.utils.data.DataLoader
-
-    """
-    # batch_size = len(batch)
-    batch = sorted(batch,key=lambda x: x[1].max_frames)
-
-    batch_proposal = [b[0] for b in batch]
-    batch_gt_graph = [b[1] for b in batch]
-
-    return batch_proposal,batch_gt_graph
-
-def collator_func_gt(batch):
-    """
-    batch is a list ,len(batch) == batch_size
-    batch[i] is a tuple, batch[i][0],batch[i][1] is an object of class TrajProposal, class VideoGraph, respectively
-    This function should be passed to the torch.utils.data.DataLoader
-
-    """
-    # batch_size = len(batch)
-
-    batch_proposal = [b[0] for b in batch]
-    batch_gt_graph = [b[1] for b in batch]
-    batch_gt_feature = [b[2] for b in batch]
-
-    return batch_proposal,batch_gt_graph,batch_gt_feature
-
-
-def collator_func_v3(batch):
-    """
-    batch is a list ,len(batch) == batch_size
-    batch[i] is a tuple, batch[i][0],batch[i][1] is an object of class TrajProposal, class VideoGraph, respectively
-    This function should be passed to the torch.utils.data.DataLoader
-
-    """
-
-    batch_video_features = [b[0] for b in batch]
-    batch_video_features = torch.stack(batch_video_features,dim=0)
-    batch_proposal = [b[1] for b in batch]
-    batch_gt_graph = [b[2] for b in batch]
-
-    return batch_video_features,batch_proposal,batch_gt_graph
