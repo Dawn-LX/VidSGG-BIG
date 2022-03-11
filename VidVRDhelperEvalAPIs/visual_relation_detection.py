@@ -148,6 +148,7 @@ def eval_relation_with_gt(
     with open(gt_relations_path,'r') as f:
         gt_relations = json.load(f)
 
+    print_func('Computing average precision AP over {} videos...'.format(len(gt_relations)))
     mean_ap, rec_at_n, mprec_at_n = evaluate(gt_relations,prediction_results,viou_threshold=0.5)
     print_func('detection mean AP (used in challenge): {}'.format(mean_ap))
     print_func('detection recall: {}'.format(rec_at_n))

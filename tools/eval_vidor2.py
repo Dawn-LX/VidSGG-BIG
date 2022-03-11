@@ -135,7 +135,6 @@ def evaluate_cls_stage(
     
     logger.info("log file have been saved at {}".format(log_path))
     logger.handlers.clear()
-    
 
 
 def evaluate_combined(
@@ -145,7 +144,6 @@ def evaluate_combined(
     save_tag="",
     experiment_dir=None,
     gpu_id = 0,
-    save_infer_result = True,
     save_relation_json=False
 ):
 
@@ -239,7 +237,7 @@ def evaluate_combined(
         datas = (uniq_quintuples.to(device),uniq_dura_inters.to(device),video_len)
         data_list = [datas]
         with torch.no_grad():
-            predictions,slots_probs,slots_mask = model(video_feature_list,data_list,score_th,tiou_th,slots_th,nms_th,truncated=True,with_gt_data=False)
+            predictions,slots_probs,slots_mask = model(video_feature_list,data_list,score_th,tiou_th,slots_th,nms_th,with_gt_data=False)
             # (n_uniq,n_slots+1,2)  (n_uniq,n_slots+1),(n_uniq,n_slots+1)
         
         n_uniq,n_slots = slots_probs.shape
@@ -256,19 +254,21 @@ def evaluate_combined(
         pr_result = convertor.to_eval_format_pr(proposal,infer_result)
         predict_relations.update(pr_result) 
 
-    logger.info('Computing average precision AP over {} videos...'.format(len(gt_relations)))
-    mean_ap, rec_at_n, mprec_at_n = eval_relation_with_gt(
+    eval_relation_with_gt(
         dataset_type="vidor",
         logger=logger,
         prediction_results=predict_relations
     )
 
-    logger.info('detection mean AP (used in challenge): {}'.format(mean_ap))
-    logger.info('detection recall: {}'.format(rec_at_n))
-    logger.info('tagging precision: {}'.format(mprec_at_n))
-        
+    if save_relation_json:
+        save_path = os.path.join(experiment_dir,'VidORval_predict_relations_aft_grd_{}.json'.format(save_tag))
+        logger.info("saving predict_relations into {}...".format(save_path))
+        with open(save_path,'w') as f:
+            json.dump(predict_relations,f)
+        logger.info("predict_relations have been saved at {}".format(save_path))
 
     logger.info("log file have been saved at {}".format(log_path))
+    logger.handlers.clear()
 
 
 
@@ -276,38 +276,55 @@ def evaluate_combined(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Object Detection Demo")
     
+    parser.add_argument("--eval_cls_only", action="store_true",default=False,help="...")
+
     parser.add_argument("--cfg_path", type=str,help="...")
     parser.add_argument("--ckpt_path", type=str,help="...")
     parser.add_argument("--output_dir", type=str, help="...")
     parser.add_argument("--cuda", type=int,help="...")
-    parser.add_argument("--save_json_results", action="store_true",default=False,help="...")
     parser.add_argument("--save_tag", type=str,default="",help="...")
+    parser.add_argument("--save_json_results", action="store_true",default=False,help="...")
     parser.add_argument("--json_results_path", type=str,help="...")
+
+    # params for grounding stage
+    parser.add_argument("--cls_stage_result_path", type=str,help="...")
+
+
     args = parser.parse_args()
-
-
+    
+    
     if args.json_results_path is not None:
         eval_relation_with_gt(
             dataset_type="vidor",
             json_results_path=args.json_results_path
         )
     else:
-        evaluate_cls_stage(
-            args.cfg_path,
-            args.ckpt_path,
-            save_tag=args.save_tag,
-            experiment_dir=args.output_dir,
-            gpu_id = args.cuda,
-            save_infer_result=True,
-            save_relation_json=False
-        )
+        if args.eval_cls_only:
+            evaluate_cls_stage(
+                args.cfg_path,
+                args.ckpt_path,
+                save_tag=args.save_tag,
+                experiment_dir=args.output_dir,
+                gpu_id = args.cuda,
+                save_infer_result=True,
+                save_relation_json=False
+            )
+        else:
+            evaluate_combined(
+                args.cfg_path,
+                args.ckpt_path,
+                args.cls_stage_result_path,
+                save_tag=args.save_tag,
+                experiment_dir=args.output_dir,
+                gpu_id = args.cuda,
+                save_relation_json=False
+            )
     
-
-
 
     '''
     ### table-3 BIG-C RoI
     python tools/eval_vidor2.py \
+        --eval_cls_only \
         --cfg_path experiments/exp4/config_.py \
         --ckpt_path experiments/exp4/model_epoch_60.pth \
         --save_tag epoch60_debug \
@@ -316,35 +333,51 @@ if __name__ == "__main__":
     2022-03-10 15:54:44,477 - detection recall: {50: 0.076040074, 100: 0.09395528}
     2022-03-10 15:54:44,477 - tagging precision: {1: 0.6225961538461539, 5: 0.5096153934987692, 10: 0.4030048120766878}
     2022-03-10 15:54:45,678 - log file have been saved at experiments/exp4/logfile/eval_k3_rTrue_pTrue_eepoch60_debug.log
+
+    ### table-3 BIG RoI
+    python tools/eval_vidor2.py \
+        --cfg_path experiments/grounding_weights/config_.py \
+        --ckpt_path experiments/grounding_weights/model_epoch_70.pth \
+        --output_dir experiments/exp4_with_grounding \
+        --cls_stage_result_path experiments/exp4/VidORval_infer_results_topk3_epoch60_debug.pkl \
+        --save_tag with_grd_epoch70 \
+        --cuda 1
+    2022-03-11 01:22:38,727 - detection mean AP (used in challenge): 0.0828240818473417
+    2022-03-11 01:22:38,728 - detection recall: {50: 0.077400304, 100: 0.09820184}
+    2022-03-11 01:22:38,728 - tagging precision: {1: 0.6213942307692307, 5: 0.5125000089621887, 10: 0.40480769666520733}
+    2022-03-11 01:22:40,535 - log file have been saved at experiments/exp4_with_grounding/logfile/eval_with_grd_epoch70.log
     '''
 
 
     '''
     ### table-3 BIG-C RoI + Lang
     python tools/eval_vidor2.py \
+        --eval_cls_only \
         --cfg_path experiments/exp5/config_.py \
         --ckpt_path experiments/exp5/model_epoch_60.pth \
         --save_tag epoch60_debug \
         --cuda 2
-    
+
     2022-03-10 15:15:34,062 - detection mean AP (used in challenge): 0.08296007380280078
     2022-03-10 15:15:34,064 - detection recall: {50: 0.079225, 100: 0.09657621}
     2022-03-10 15:15:34,064 - tagging precision: {1: 0.6442307692307693, 5: 0.5170673167404647, 10: 0.41052017033171767}
     2022-03-10 15:15:35,310 - log file have been saved at experiments/exp5/logfile/eval_k3_rTrue_pTrue_eepoch60_debug.log
 
+    ### table-3 BIG RoI + Lang
+    python tools/eval_vidor2.py \
+        --cfg_path experiments/grounding_weights/config_.py \
+        --ckpt_path experiments/grounding_weights/model_epoch_70.pth \
+        --output_dir experiments/exp5_with_grounding \
+        --cls_stage_result_path experiments/exp5/VidORval_infer_results_topk3_epoch60_debug.pkl \
+        --save_tag with_grd_epoch70 \
+        --cuda 3
+    2022-03-11 01:24:53,219 - detection mean AP (used in challenge): 0.08545435481766761
+    2022-03-11 01:24:53,220 - detection recall: {50: 0.08038617, 100: 0.100424655}
+    2022-03-11 01:24:53,220 - tagging precision: {1: 0.6442307692307693, 5: 0.5180288552163312, 10: 0.4096788243086149}
+    2022-03-11 01:24:54,514 - log file have been saved at experiments/exp5_with_grounding/logfile/eval_with_grd_epoch70.log
     '''
 
-    ### table-3 BIG-C RoI + Lang
-    # model_class_path = "Tempformer_model/model_0v7.py"
-    # cfg_path = "training_dir_reorganized/vidor/model_0v7/config_.py"
-    # weight_path = "training_dir_reorganized/vidor/model_0v7/model_epoch_60.pth"
-    # save_tag = "epoch60_debug"
-    # 2022-03-09 21:04:59,378 - detection mean AP (used in challenge): 0.08296007380280078
-    # 2022-03-09 21:04:59,379 - detection recall: {50: 0.079225, 100: 0.09657621}
-    # 2022-03-09 21:04:59,379 - tagging precision: {1: 0.6442307692307693, 5: 0.5170673167404647, 10: 0.41052017033171767}
-    # 2022-03-09 21:04:59,390 - hit_infos have been saved at training_dir_reorganized/vidor/model_0v7/VidORval_hit_infos_k3_rFalse_pTrue_eepoch60_debug.pkl
-    # 2022-03-09 21:04:59,391 - evaluate results and log file have been saved at training_dir_reorganized/vidor/model_0v7/logfile/eval_k3_rFalse_pTrue_eepoch60_debug.log
-
+    
 
     
     

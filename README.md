@@ -9,6 +9,16 @@ the code is still being organized
 - explain the format of TrajProposal's feature, e.g., traj_classeme = traj_features[:,:,self.dim_feat:]
 - clean up utils_func
 
+# Data to release
+- I3D feature of VidOR train & val around 6G
+- VidOR traj `.np` files (OnlyPos) (this has been released, around 12G)
+- VidVRD traj `.np` files (with feature) around 20G
+- cache file for train & val (for vidor)
+    - v9 for val (around 15G)
+    - v7clsme for train (14 parts, around 130G in total)
+- do not release cache file for vidvrd (they can generate them using VidVRD traj `.np` files)
+
+
 # 考虑一下 v7_with_clsme 的val-set
 
 我们应该release的是 v7_with_clsme train-set cache, 但是我们evaluate的是 v9 的 val-set
