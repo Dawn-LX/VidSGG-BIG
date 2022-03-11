@@ -1,6 +1,11 @@
+import os
 import torch
-from utils.utils_func import traj_cutoff,dura_intersection,dura_intersection_ts,unique_with_idx_nd
-from utils.categories_v2 import vidvrd_CatId2name,vidvrd_PredId2name,vidor_CatId2name,vidor_PredId2name,PKU_vidvrd_CatId2name
+
+from VidVRDhelperEvalAPIs import eval_visual_relation
+
+from .utils_func import create_logger,load_json
+from .utils_func import traj_cutoff,dura_intersection,dura_intersection_ts
+from .categories_v2 import vidvrd_CatId2name,vidvrd_PredId2name,vidor_CatId2name,vidor_PredId2name,PKU_vidvrd_CatId2name
 
 
 
@@ -253,5 +258,4 @@ class EvalFmtCvtor(object):
             relations.append(result_per_triplet)
         
         return {video_name: relations}
-
 

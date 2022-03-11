@@ -359,15 +359,13 @@ class BIG_C(nn.Module):
         nn.init.normal_(self.pred_query_init,mean=0,std=0.1)
     
     
-    def forward(self,proposal_list,gt_graph_list=None,use_post=True,topk=10,use_regr=False):
+    def forward(self,proposal_list,gt_graph_list=None,topk=3):
 
         if self.is_train:
             assert gt_graph_list != None
             return self._forward_train(proposal_list,gt_graph_list)
         else: 
-            self.use_post = use_post #TODO add code with self.use_post == False
             self.topk = topk
-            self.use_regr = use_regr
             return self._forward_test(proposal_list)
 
 
@@ -712,7 +710,6 @@ class BIG_C(nn.Module):
 
 
     def construct_triplet(self,proposal,pred_logits,att_matrx):
-        #TODO add code with self.use_post == False
         # pred_cs.shape == (n_pred,2) center span
         
 

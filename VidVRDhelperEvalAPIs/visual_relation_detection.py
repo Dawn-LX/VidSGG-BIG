@@ -1,8 +1,8 @@
+import json # added by Kaifeng Gao
 from collections import defaultdict
 import numpy as np
 from tqdm import tqdm
 from .common import voc_ap, viou
-
 
 def eval_detection_scores(gt_relations, pred_relations, viou_threshold):
     pred_relations = sorted(pred_relations, key=lambda x: x['score'], reverse=True)
@@ -116,6 +116,42 @@ def evaluate(groundtruth, prediction, viou_threshold=0.5,
     # print('tagging precision@10: {}'.format(mprec_at_n[10]))
     return mean_ap, rec_at_n, mprec_at_n
 
+
+
+####### the following func is added by Kaifeng Gao (kite_phone@zju.edu.cn)
+
+def eval_relation_with_gt(
+    dataset_type,
+    logger=None,
+    prediction_results=None,
+    json_results_path=None,
+):
+
+    if logger is None:
+        print_func = print
+    else:
+        print_func = logger.info
+ 
+    if prediction_results is None:
+        print_func("loading json results from {}".format(json_results_path))
+        with open(json_results_path,'r') as f:
+            prediction_results = json.load(f)
+        print_func("Done.")
+    else:
+        assert json_results_path is None
+    
+    if dataset_type.lower() == "vidvrd":
+        gt_relations_path = "datasets/GT_json_for_eval/VidVRDtest_gts.json"
+    else:
+        gt_relations_path = "datasets/GT_json_for_eval/VidORval_gts.json"
+    
+    with open(gt_relations_path,'r') as f:
+        gt_relations = json.load(f)
+
+    mean_ap, rec_at_n, mprec_at_n = evaluate(gt_relations,prediction_results,viou_threshold=0.5)
+    print_func('detection mean AP (used in challenge): {}'.format(mean_ap))
+    print_func('detection recall: {}'.format(rec_at_n))
+    print_func('tagging precision: {}'.format(mprec_at_n))
 
 if __name__ == "__main__":
     """

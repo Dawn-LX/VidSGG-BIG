@@ -16,7 +16,7 @@ from VidVRDhelperEvalAPIs import eval_visual_relation
 
 torch.set_printoptions(sci_mode=False,precision=4,linewidth=160)
 
-def inference_then_eval(
+def evaluate_cls_stage(
     cfg_path,
     weight_path,
     save_tag="",
@@ -159,7 +159,8 @@ def inference_then_eval(
             json.dump(predict_relations,f)
         logger.info("predict_relations have been saved at {}".format(save_path))
         
-    logger.info("evaluate results and log file have been saved at {}".format(log_path))
+    logger.info("log file have been saved at {}".format(log_path))
+    logger.handlers.clear()
 
     
     
@@ -177,8 +178,7 @@ if __name__ == "__main__":
     parser.add_argument("--json_results_path", type=str,help="...")
     args = parser.parse_args()
 
-
-    inference_then_eval(
+    evaluate_cls_stage(
         args.cfg_path,
         args.ckpt_path,
         save_tag=args.save_tag,
@@ -188,8 +188,6 @@ if __name__ == "__main__":
         save_relation_json=False
     )
 
-
-    # inference_then_eval(cfg_path,weight_path,save_tag,use_regr=False,gpu_id=3,save_relation_result=False)
 
     '''
     ### table-3 BIG-C RoI

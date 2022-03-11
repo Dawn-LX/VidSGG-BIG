@@ -12,8 +12,8 @@ import torch
 from dataloaders.dataloader_vidvrd import Dataset,Dataset_pku,Dataset_pku_i3d
 from models import BIG_C_vidvrd
 from utils.evaluate import EvalFmtCvtor
-from utils.utils_func import create_logger,parse_config_py,load_json
-from VidVRDhelperEvalAPIs import eval_visual_relation
+from utils.utils_func import create_logger,parse_config_py
+from VidVRDhelperEvalAPIs import eval_relation_with_gt
 
 torch.set_printoptions(sci_mode=False,precision=4,linewidth=160)
 
@@ -132,7 +132,6 @@ def inference_then_eval(
         (
             uniq_quintuples,    # shape == (n_unique,5)
             uniq_scores,        # shape == (n_unique,3)
-            # uniq_pred_confs,    # shape == (n_unique,)
             uniq_dura_inters,   # shape == (n_unique,2) 
             uniq_query_ids,     # shape == (n_unique,)
         ) = batch_triplets[0]
@@ -149,7 +148,11 @@ def inference_then_eval(
             pickle.dump(infer_result_for_save,f)
         logger.info("infer_result saved at {}".format(save_path))
 
-    eval_relation(logger=logger,prediction_results=predict_relations)
+    eval_relation_with_gt(
+        dataset_type="vidvrd",
+        logger=logger,
+        prediction_results=predict_relations
+    )
     
     if save_relation_json:
         save_path = os.path.join(experiment_dir,'VidORval_predict_relations_{}.json'.format(save_tag))
@@ -158,36 +161,10 @@ def inference_then_eval(
             json.dump(predict_relations,f)
         logger.info("predict_relations have been saved at {}".format(save_path))
     logger.info("log file have been saved at {}".format(log_path))
+    logger.handlers.clear()
 
 
-def eval_relation(
-    logger=None,
-    prediction_results=None,
-    json_results_path=None,
-):
-    '''
-    NOTE this func is only support for VidVRD currently
-    '''
-    if logger is None:
-        log_dir = "cache/logfile"
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        log_path = os.path.join(log_dir,'eval.log')
-        logger = create_logger(log_path)
-    if prediction_results is None:
-        logger.info("loading json results from {}".format(json_results_path))
-        prediction_results = load_json(json_results_path)
-        logger.info("Done.")
-    else:
-        assert json_results_path is None
-    
 
-    gt_relations = load_json("datasets/GT_json_for_eval/VidVRDtest_gts.json")
-    mean_ap, rec_at_n, mprec_at_n = eval_visual_relation(gt_relations,prediction_results,viou_threshold=0.5)
-    # logger.info(f"mAP:{mean_ap}, Retection Recall:{rec_at_n}, Tagging Precision: {mprec_at_n}")
-    logger.info('detection mean AP (used in challenge): {}'.format(mean_ap))
-    logger.info('detection recall: {}'.format(rec_at_n))
-    logger.info('tagging precision: {}'.format(mprec_at_n))
 
 
 if __name__ == "__main__":
@@ -206,8 +183,9 @@ if __name__ == "__main__":
 
 
     if args.json_results_path is not None:
-        eval_relation(
-            json_results_path=args.json_results_path,
+        eval_relation_with_gt(
+            dataset_type="vidvrd",
+            json_results_path=args.json_results_path
         )
     else:
         inference_then_eval(

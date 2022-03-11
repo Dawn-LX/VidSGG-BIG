@@ -316,9 +316,7 @@ def linear_interpolation(vectors,frame_ids):
     result_vectors = np.concatenate(result_vectors,axis=0)
     return result_vectors
 
-def normalize01(x):
 
-    return (x-x.min())/(x.max() - x.min())
 
 def unique_with_idx(tensor):
     assert len(tensor.shape) == 1  # TODO consider muti-dimension

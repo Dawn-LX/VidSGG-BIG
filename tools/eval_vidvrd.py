@@ -126,7 +126,6 @@ def inference_then_eval(
         (
             uniq_quintuples,    # shape == (n_unique,5)
             uniq_scores,        # shape == (n_unique,3)
-            # uniq_pred_confs,    # shape == (n_unique,)
             uniq_dura_inters,   # shape == (n_unique,2) 
             uniq_query_ids,     # shape == (n_unique,)
         ) = batch_triplets[0]
@@ -181,6 +180,7 @@ def inference_then_eval(
             json.dump(predict_relations,f)
         logger.info("predict_relations have been saved at {}".format(save_path))
     logger.info("log file have been saved at {}".format(log_path))
+    logger.handlers.clear()
 
 
 def replace_state_dict_keys(state_dict):
