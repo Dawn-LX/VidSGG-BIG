@@ -18,9 +18,3 @@ the code is still being organized
     - v7clsme for train (14 parts, around 130G in total)
 - do not release cache file for vidvrd (they can generate them using VidVRD traj `.np` files)
 
-
-# 考虑一下 v7_with_clsme 的val-set
-
-我们应该release的是 v7_with_clsme train-set cache, 但是我们evaluate的是 v9 的 val-set
-最好的做法是统一到一个dataloader里，然后 train-set cache 和 val-set cache 都保持原来paper里用的 (i.e., v7_clsme for train and v9 for val) (做完grounding 再做这个)
-
