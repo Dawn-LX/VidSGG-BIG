@@ -1,5 +1,5 @@
 # TODO
-the code is still being organized
+the code is still being organized (an initial version will be completed before March 28, 2022).
 
 # TODO 
 - add code for training
