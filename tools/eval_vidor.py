@@ -167,7 +167,7 @@ def evaluate_combined(
     infer_config = all_cfgs["inference_config"]
     score_th = infer_config["score_th"]
     tiou_th = infer_config["tiou_th"]
-    slots_th = infer_config["slots_th"]
+    bins_th = infer_config["bins_th"]
     nms_th = infer_config["nms_th"]
 
     # create logger
@@ -239,17 +239,17 @@ def evaluate_combined(
         datas = (uniq_quintuples.to(device),uniq_dura_inters.to(device),video_len)
         data_list = [datas]
         with torch.no_grad():
-            predictions,slots_probs,slots_mask = model(video_feature_list,data_list,score_th,tiou_th,slots_th,nms_th,with_gt_data=False)
-            # (n_uniq,n_slots+1,2)  (n_uniq,n_slots+1),(n_uniq,n_slots+1)
+            predictions,bins_probs,bins_mask = model(video_feature_list,data_list,score_th,tiou_th,bins_th,nms_th,with_gt_data=False)
+            # (n_uniq,n_bins+1,2)  (n_uniq,n_bins+1),(n_uniq,n_bins+1)
         
-        n_uniq,n_slots = slots_probs.shape
-        uniq_quintuples = uniq_quintuples[:,None,:].repeat(1,n_slots,1)      # (n_uniq,n_slots,5)
-        uniq_scores = uniq_scores[:,None] * slots_probs   # (n_unique,n_slots)
-        predictions = predictions * video_len                                # (n_uniq,n_slots,2)
+        n_uniq,n_bins = bins_probs.shape
+        uniq_quintuples = uniq_quintuples[:,None,:].repeat(1,n_bins,1)      # (n_uniq,n_bins,5)
+        uniq_scores = uniq_scores[:,None] * bins_probs   # (n_unique,n_bins)
+        predictions = predictions * video_len                                # (n_uniq,n_bins,2)
         
-        uniq_quintuples = uniq_quintuples[slots_mask,:].cpu()
-        uniq_scores = uniq_scores[slots_mask].cpu()
-        predictions = predictions[slots_mask,:].cpu()
+        uniq_quintuples = uniq_quintuples[bins_mask,:].cpu()
+        uniq_scores = uniq_scores[bins_mask].cpu()
+        predictions = predictions[bins_mask,:].cpu()
         predictions = torch.round(predictions).type(torch.long)
         
         infer_result = (uniq_quintuples,uniq_scores,predictions)
@@ -334,7 +334,7 @@ if __name__ == "__main__":
 
     '''
     ### table-3 BIG-C RoI
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --eval_cls_only \
         --cfg_path experiments/exp4/config_.py \
         --ckpt_path experiments/exp4/model_epoch_60.pth \
@@ -346,7 +346,7 @@ if __name__ == "__main__":
     2022-03-10 15:54:45,678 - log file have been saved at experiments/exp4/logfile/eval_k3_rTrue_pTrue_eepoch60_debug.log
 
     ### table-3 BIG RoI
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --cfg_path experiments/grounding_weights/config_.py \
         --ckpt_path experiments/grounding_weights/model_epoch_70.pth \
         --output_dir experiments/exp4_with_grounding \
@@ -362,7 +362,7 @@ if __name__ == "__main__":
 
     '''
     ### table-3 BIG-C RoI + Lang
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --eval_cls_only \
         --cfg_path experiments/exp5/config_.py \
         --ckpt_path experiments/exp5/model_epoch_60.pth \
@@ -375,13 +375,13 @@ if __name__ == "__main__":
     2022-03-10 15:15:35,310 - log file have been saved at experiments/exp5/logfile/eval_k3_rTrue_pTrue_eepoch60_debug.log
 
     ### table-3 BIG RoI + Lang
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --cfg_path experiments/grounding_weights/config_.py \
         --ckpt_path experiments/grounding_weights/model_epoch_70.pth \
         --output_dir experiments/exp5_with_grounding \
         --cls_stage_result_path experiments/exp5/VidORval_infer_results_topk3_epoch60_debug.pkl \
         --save_tag with_grd_epoch70 \
-        --cuda 1
+        --cuda 2
     2022-03-11 01:24:53,219 - detection mean AP (used in challenge): 0.08545435481766761
     2022-03-11 01:24:53,220 - detection recall: {50: 0.08038617, 100: 0.100424655}
     2022-03-11 01:24:53,220 - tagging precision: {1: 0.6442307692307693, 5: 0.5180288552163312, 10: 0.4096788243086149}
@@ -389,7 +389,7 @@ if __name__ == "__main__":
 
 
     ### table-2 Base-C
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --eval_cls_only \
         --use_baseline \
         --cfg_path experiments/exp6/config_.py \
@@ -404,7 +404,7 @@ if __name__ == "__main__":
     2022-03-14 04:35:19,517 - log file have been saved at experiments/exp6/logfile/eval_topk3_epoch80_rtall.log
 
 
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --eval_cls_only \
         --use_baseline \
         --cfg_path experiments/exp6/config_rt200.py \
@@ -419,7 +419,7 @@ if __name__ == "__main__":
     2022-03-14 05:10:20,304 - log file have been saved at experiments/exp6/logfile/eval_topk3_epoch80_rt200.log
 
     ### table-2 Base
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --use_baseline \
         --cfg_path experiments/grounding_weights/config_.py \
         --ckpt_path experiments/grounding_weights/model_epoch_70.pth \
@@ -437,7 +437,7 @@ if __name__ == "__main__":
     
     
     ### table-6 BIG RoI + Lang #Bins=1
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --cfg_path experiments/grounding_weights/config_bin1.py \
         --ckpt_path experiments/grounding_weights/model_bin1_epoch_70.pth \
         --output_dir experiments/exp5_with_grounding \
@@ -453,7 +453,7 @@ if __name__ == "__main__":
     
 
     ### table-6 BIG RoI + Lang #Bins=5
-    python tools/eval_vidor2.py \
+    python tools/eval_vidor.py \
         --cfg_path experiments/grounding_weights/config_bin5.py \
         --ckpt_path experiments/grounding_weights/model_bin5_epoch_70.pth \
         --output_dir experiments/exp5_with_grounding \

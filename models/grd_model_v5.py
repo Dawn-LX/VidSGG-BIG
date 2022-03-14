@@ -148,7 +148,7 @@ class DEBUG(nn.Module):
         self.dim_feat = config["dim_feat"]
         self.dim_clsme = config["dim_clsme"]
         self.dim_hidden = config["dim_hidden"] # (128,)
-        self.num_slots = config["num_slots"]
+        self.num_bins = config["num_bins"]
         
         self.loss_factor = config["loss_factor"]
 
@@ -184,16 +184,16 @@ class DEBUG(nn.Module):
             nn.ReLU()
         )
         temp2 = [copy.deepcopy(temp) for _ in range(4)] \
-            + [DepthWiseSeparableConv1d(self.dim_hidden,self.num_slots,3)]
+            + [DepthWiseSeparableConv1d(self.dim_hidden,self.num_bins,3)]
         temp3 = [copy.deepcopy(temp) for _ in range(4)] \
-            + [DepthWiseSeparableConv1d(self.dim_hidden,2*self.num_slots,3),nn.Sigmoid()]
+            + [DepthWiseSeparableConv1d(self.dim_hidden,2*self.num_bins,3),nn.Sigmoid()]
         
         self.cls_head = nn.Sequential(*temp2)
         self.conf_head = copy.deepcopy(self.cls_head)
         self.regr_head = nn.Sequential(*temp3)
         
 
-    def forward(self,video_feature_list,data_list,score_th=0.5,tiou_th=0.5,slots_th=0.1,nms_th=0.5,is_debug=False,with_gt_data=True):
+    def forward(self,video_feature_list,data_list,score_th=0.5,tiou_th=0.5,bins_th=0.1,nms_th=0.5,with_gt_data=True):
         self.pred_cats_all = self.pred_cats_all.to(video_feature_list[0].device)
         if with_gt_data:
             # When evaluating the grounding stage only, take the gt_data as input and evaluate the grounding model itself only
@@ -209,7 +209,7 @@ class DEBUG(nn.Module):
             return self._forward_train(video_feature_list,words_embs,inter_duras,targets,index_maps)
         else:
             assert len(video_feature_list) == 1  # we set batch_size=1 at test time for simplicity
-            self.slots_conf_th = slots_th
+            self.bin_conf_th = bins_th
             self.score_th = score_th
             self.tiou_th = tiou_th
             self.nms_th = nms_th
@@ -217,19 +217,19 @@ class DEBUG(nn.Module):
                 return None,None
             
 
-            pooled_se,slots_probs,slots_mask = self._forward_test_single(video_feature_list[0],words_embs[0],inter_duras[0])
-            return pooled_se,slots_probs,slots_mask
+            pooled_se,bins_probs,bins_mask = self._forward_test_single(video_feature_list[0],words_embs[0],inter_duras[0])
+            return pooled_se,bins_probs,bins_mask
 
     
     def get_gt_labels(self,target,n_clips):
         # target is normalized
         assert torch.all(target <= 1)
         clip_range = torch.linspace(0,1,n_clips,device=target.device)  # shape == (n_clips,)
-        slots = torch.linspace(0,1,self.num_slots+1,device=target.device)  # 0~1 closed interval 
+        bins = torch.linspace(0,1,self.num_bins+1,device=target.device)  # 0~1 closed interval 
         target_ct = target.mean(dim=-1)
         
-        offset = target_ct[:,None] - slots[None,:]  # (n_query,n_slots+1)
-        slots_ids = (offset > 0).sum(dim=-1) - 1   # 0 ~ n_slots-1          # (n_query,)
+        offset = target_ct[:,None] - bins[None,:]  # (n_query,n_bins+1)
+        bin_ids = (offset > 0).sum(dim=-1) - 1   # 0 ~ n_bins-1          # (n_query,)
         left =  clip_range[None,:] - target[:,0,None]  # shape == (n_query,n_clips)
         right = target[:,1,None] - clip_range[None,:]
         mask = (left <= 0) | (right <= 0)  # (n_query,n_clips)
@@ -245,7 +245,7 @@ class DEBUG(nn.Module):
             gt_regrs,          # shape == (n_query,n_clips,2)
             gt_ctness,         # shape == (n_query,n_clips)
             gt_scores,         # shape == (n_query,n_clips)
-            slots_ids,         # shape == (n_query,)
+            bin_ids,         # shape == (n_query,)
         )
         return ret    
 
@@ -380,22 +380,22 @@ class DEBUG(nn.Module):
 
         labels = [self.get_gt_labels(tgt,n) for tgt,n in zip(targets,n_clips)]
 
-        slots_ids = [label[-1] for label in labels]
-        mapped_predictions = [self.map2slots(re,co,cl,sl,im) for re,co,cl,sl,im in zip(regrs,conf_logits,cls_logits,slots_ids,index_maps)]
+        bin_ids = [label[-1] for label in labels]
+        mapped_predictions = [self.map2bins(re,co,cl,sl,im) for re,co,cl,sl,im in zip(regrs,conf_logits,cls_logits,bin_ids,index_maps)]
 
         loss_dict = self.loss(mapped_predictions,labels,index_maps)
 
         total_loss = torch.stack(list(loss_dict.values())).sum()    # scalar tensor        
         return total_loss, loss_dict
     
-    def map2slots(self,regrs,conf_logits,cls_logits,slots_ids,index_map):
-        # regrs         (n_uniq*2,n_clips,2*n_slots)
-        # conf_logits   (n_uniq*2,n_clips,n_slots)
-        # cls_logits    (n_uniq*2,n_clips,n_slots)
+    def map2bins(self,regrs,conf_logits,cls_logits,bin_ids,index_map):
+        # regrs         (n_uniq*2,n_clips,2*n_bins)
+        # conf_logits   (n_uniq*2,n_clips,n_bins)
+        # cls_logits    (n_uniq*2,n_clips,n_bins)
         n_uniq2,n_clips,_ = regrs.shape
         # print(regrs.shape)
         n_uniq = n_uniq2//2
-        regrs = regrs.reshape(n_uniq2,n_clips,2,self.num_slots)
+        regrs = regrs.reshape(n_uniq2,n_clips,2,self.num_bins)
 
         pos_conf = []
         neg_conf = []
@@ -403,14 +403,14 @@ class DEBUG(nn.Module):
         neg_cls = []
         pos_regrs = []
         for i,imp in enumerate(index_map):     # loop for n_uniq
-            slots = slots_ids[imp]  # (n_dup_i,)
-            slots_mask = torch.zeros(size=(self.num_slots,),dtype=torch.bool,device=slots.device).scatter_(0,slots,1)
+            bins = bin_ids[imp]  # (n_dup_i,)
+            bins_mask = torch.zeros(size=(self.num_bins,),dtype=torch.bool,device=bins.device).scatter_(0,bins,1)
 
-            pos_conf_i = conf_logits[i,:,slots]          # (n_clips,n_dup_i)
-            neg_conf_i = conf_logits[i,:,~slots_mask]    # (n_clips,n_neg_i) n_neg_i: number of negative slots in this uniq_i 
-            pos_cls_i = cls_logits[i,:,slots]
-            neg_cls_i = cls_logits[i,:,~slots_mask]  
-            regr_i = regrs[i,:,:,slots]  # (n_clips,2,n_dup_i) 
+            pos_conf_i = conf_logits[i,:,bins]          # (n_clips,n_dup_i)
+            neg_conf_i = conf_logits[i,:,~bins_mask]    # (n_clips,n_neg_i) n_neg_i: number of negative bins in this uniq_i 
+            pos_cls_i = cls_logits[i,:,bins]
+            neg_cls_i = cls_logits[i,:,~bins_mask]  
+            regr_i = regrs[i,:,:,bins]  # (n_clips,2,n_dup_i) 
 
             pos_conf.append(pos_conf_i)
             neg_conf.append(neg_conf_i)
@@ -420,14 +420,14 @@ class DEBUG(nn.Module):
         
 
         pos_conf = torch.cat(pos_conf,dim=-1).t()   # (n_clips,n_query)  --> (n_query,n_clips)
-        neg_conf = torch.cat(neg_conf,dim=-1).t()   # (n_clips,n_neg) --> (n_neg,n_clips)  n_negs: number of negative slots in all n_uniq
+        neg_conf = torch.cat(neg_conf,dim=-1).t()   # (n_clips,n_neg) --> (n_neg,n_clips)  n_negs: number of negative bins in all n_uniq
         pos_cls = torch.cat(pos_cls,dim=-1).t() 
         neg_cls = torch.cat(neg_cls,dim=-1).t()
         pos_regrs = torch.cat(pos_regrs,dim=-1).permute(2,0,1)  # (n_clips,2,n_query) --> (n_query,n_clips,2)
         
         # for negativate samples:
-        neg_conf2 = conf_logits[n_uniq:,:,:].permute(0,2,1).reshape(n_uniq*self.num_slots,n_clips)
-        neg_cls2 = cls_logits[n_uniq:,:,:].permute(0,2,1).reshape(n_uniq*self.num_slots,n_clips)
+        neg_conf2 = conf_logits[n_uniq:,:,:].permute(0,2,1).reshape(n_uniq*self.num_bins,n_clips)
+        neg_cls2 = cls_logits[n_uniq:,:,:].permute(0,2,1).reshape(n_uniq*self.num_bins,n_clips)
 
         neg_conf = torch.cat([neg_conf,neg_conf2],dim=0)
         neg_cls = torch.cat([neg_cls,neg_cls2],dim=0)
@@ -454,24 +454,24 @@ class DEBUG(nn.Module):
         gt_scores = []
         for pred,label,index_map in zip(mapped_predictions,labels,index_maps):
             pos_conf,neg_conf,pos_cls,neg_cls,pos_regr  = pred
-            gt_regr,gt_ctnes,gt_score,slots_id = label
+            gt_regr,gt_ctnes,gt_score,bins_id = label
             index_map = torch.cat(index_map)  # (n_query,)
             gt_regr = gt_regr[index_map,:,:]
             gt_ctnes = gt_ctnes[index_map,:]
             gt_score = gt_score[index_map,:]
-            # slots_id has been applied with `index_map` in self.map2slots
+            # bins_id has been applied with `index_map` in self.map2bins
 
             # pos_conf,           # (n_query,n_clips)
             # neg_conf,           # as above
             # pos_cls,            # as above
             # neg_cls,            # as above
             # pos_regr,           # (n_query,n_clips,2)
-            # slots_conf_target   # (n_uniq,n_slots)
-            # slots_logit         # (n_uniq,n_slots)
+            # bins_conf_target   # (n_uniq,n_bins)
+            # bins_logit         # (n_uniq,n_bins)
             # gt_regr             (n_query,n_clips,2)
             # gt_ctnes             (n_query,n_clips)
             # gt_score             (n_query,n_clips)
-            # slots_id             (n_query,)
+            # bins_id             (n_query,)
 
             pos_confs.append(pos_conf.reshape(-1))
             neg_confs.append(neg_conf.reshape(-1))
@@ -534,16 +534,16 @@ class DEBUG(nn.Module):
         fg_probs = cls_logits.sigmoid()
         scores = confs * fg_probs       # (n_uniq, n_clips, k)
 
-        slots_probs = torch.max(scores,dim=1)[0]  # (n_uniq,k)
-        slots_probs = torch.constant_pad_nd(slots_probs,pad=(0,1),value=1.0)  # (n_uniq,k+1)
-        slots_mask = slots_probs > self.slots_conf_th # (n_uniq,k+1)
+        bins_probs = torch.max(scores,dim=1)[0]  # (n_uniq,k)
+        bins_probs = torch.constant_pad_nd(bins_probs,pad=(0,1),value=1.0)  # (n_uniq,k+1)
+        bins_mask = bins_probs > self.bin_conf_th # (n_uniq,k+1)
         
         
         pooled_se = self.temporal_pooling(regrs,scores) # (n_uniq,k,2)
         
         # inter_dura         (n_uniq,2)
         overlap_mask = []
-        for k in range(self.num_slots):
+        for k in range(self.num_bins):
             pooled_se_k = pooled_se[:,k,:]  # (n_uniq,2)
             se_spo,mask = dura_intersection_ts(inter_dura,pooled_se_k,broadcast=False)
             pooled_se[:,k,:] = inter_dura.clone()
@@ -554,40 +554,40 @@ class DEBUG(nn.Module):
         
         pooled_se = torch.cat([pooled_se,inter_dura[:,None,:]],dim=1)  # (n_uniq,k+1,2)
 
-        slots_mask_nms = self.temporal_nms(pooled_se,slots_probs)
-        slots_mask = slots_mask & overlap_mask & slots_mask_nms         # (n_uniq, k+1)
+        bins_mask_nms = self.temporal_nms(pooled_se,bins_probs)
+        bins_mask = bins_mask & overlap_mask & bins_mask_nms         # (n_uniq, k+1)
 
-        #--------------- make sure each row of slots_mask has at least one `True`
-        allFalse_rowids = (slots_mask.sum(dim=-1) == 0).nonzero(as_tuple=True)[0]
+        #--------------- make sure each row of bins_mask has at least one `True`
+        allFalse_rowids = (bins_mask.sum(dim=-1) == 0).nonzero(as_tuple=True)[0]
         if allFalse_rowids.numel()>0:
-            max_col_ids = slots_probs[allFalse_rowids,:].max(dim=-1)[1]
-            slots_mask[allFalse_rowids,max_col_ids] = 1
+            max_col_ids = bins_probs[allFalse_rowids,:].max(dim=-1)[1]
+            bins_mask[allFalse_rowids,max_col_ids] = 1
         # ----------------
 
 
         #### improve  
-        # 如果max_slots_prob很小，那说明这个triplet query 在视频中可能没有对应的time period， 
-        # 就是说grounding 反过来对classification有修正作用
-        mask = slots_probs[:,:-1].max(-1)[0] <= self.slots_conf_th
-        slots_probs[mask,-1] = 0.0   # 把subj-obj overlap的那个置为0
+        # for thoses with small  max_bins_prob, they  might be false positives returned by the classification stage
+        # i.e., the grounding stage can correct the classification stage to some extent.
+        mask = bins_probs[:,:-1].max(-1)[0] <= self.bin_conf_th
+        bins_probs[mask,-1] = 0.0   # set the score of `subj-obj overlap` as 0.0
         #### 
 
 
-        return pooled_se,slots_probs,slots_mask
+        return pooled_se,bins_probs,bins_mask
 
-    def eval_tiou(self,prediction_se,slots_mask,target,index_map):
+    def eval_tiou(self,prediction_se,bins_mask,target,index_map):
         n_uniq = prediction_se.shape[0]
-        if slots_mask is None:  # for baseline
+        if bins_mask is None:  # for baseline
             assert len(prediction_se.shape) == 2
             # prediction_se.shape == (n_uniq,2)
             inter_dura = prediction_se
-            slots_mask = torch.ones(size=(n_uniq,self.num_slots),device=inter_dura.device,dtype=torch.bool)
-            pooled_cl = torch.rand(size=(n_uniq,self.num_slots,2),device=inter_dura.device)
+            bins_mask = torch.ones(size=(n_uniq,self.num_bins),device=inter_dura.device,dtype=torch.bool)
+            pooled_cl = torch.rand(size=(n_uniq,self.num_bins,2),device=inter_dura.device)
             s = pooled_cl[:,:,1] - pooled_cl[:,:,0]/2
             e = pooled_cl[:,:,1] + pooled_cl[:,:,0]/2
-            pooled_se = torch.stack([s,e],dim=-1)  # (n_uniq,num_slots,2)
+            pooled_se = torch.stack([s,e],dim=-1)  # (n_uniq,num_bins,2)
             # print(pooled_se.shape,"pooled_se.shape")
-            for k in range(self.num_slots):
+            for k in range(self.num_bins):
                 pooled_se_k = pooled_se[:,k,:]  # (n_uniq,2)
                 # print(pooled_se_k)
                 se_spo,mask = dura_intersection_ts(inter_dura,pooled_se_k,broadcast=False)
@@ -596,11 +596,11 @@ class DEBUG(nn.Module):
             prediction_se = pooled_se
         else:
             assert len(prediction_se.shape) == 3
-            # prediction_se.shape == (n_uniq,n_slots,2)  for model prediction
+            # prediction_se.shape == (n_uniq,n_bins,2)  for model prediction
 
         tiou_all = []
         for i,im in enumerate(index_map):
-            mask = slots_mask[i,:]  # (n_slots,)
+            mask = bins_mask[i,:]  # (n_bins,)
             dup_tgt = target[im,:]  # (n_dup,2)
             se = prediction_se[i,mask,:]   # (n_pos,2)
 
@@ -612,19 +612,19 @@ class DEBUG(nn.Module):
         return tiou_all
 
     
-    def eval_f1score(self,prediction_se,slots_mask,target,index_map,tiou_ths=[0.5]):
+    def eval_f1score(self,prediction_se,bins_mask,target,index_map,tiou_ths=[0.5]):
         n_uniq = prediction_se.shape[0]
-        if slots_mask is None:  # for baseline
+        if bins_mask is None:  # for baseline
             assert len(prediction_se.shape) == 2
             # prediction_se.shape == (n_uniq,2)
             inter_dura = prediction_se
-            slots_mask = torch.ones(size=(n_uniq,self.num_slots),device=inter_dura.device,dtype=torch.bool)
-            pooled_cl = torch.rand(size=(n_uniq,self.num_slots,2),device=inter_dura.device)
+            bins_mask = torch.ones(size=(n_uniq,self.num_bins),device=inter_dura.device,dtype=torch.bool)
+            pooled_cl = torch.rand(size=(n_uniq,self.num_bins,2),device=inter_dura.device)
             s = pooled_cl[:,:,1] - pooled_cl[:,:,0]/2
             e = pooled_cl[:,:,1] + pooled_cl[:,:,0]/2
-            pooled_se = torch.stack([s,e],dim=-1)  # (n_uniq,num_slots,2)
+            pooled_se = torch.stack([s,e],dim=-1)  # (n_uniq,num_bins,2)
             # print(pooled_se.shape,"pooled_se.shape")
-            for k in range(self.num_slots):
+            for k in range(self.num_bins):
                 pooled_se_k = pooled_se[:,k,:]  # (n_uniq,2)
                 # print(pooled_se_k)
                 se_spo,mask = dura_intersection_ts(inter_dura,pooled_se_k,broadcast=False)
@@ -633,15 +633,15 @@ class DEBUG(nn.Module):
             prediction_se = pooled_se
         else:
             assert len(prediction_se.shape) == 3
-            # prediction_se.shape == (n_uniq,n_slots,2)  for model prediction
+            # prediction_se.shape == (n_uniq,n_bins,2)  for model prediction
 
         n_hits = {k:[] for k in tiou_ths}
         n_tgts = []
         n_predictions = []
         for i,im in enumerate(index_map):
-            mask = slots_mask[i,:]  # (n_slots,)
+            mask = bins_mask[i,:]  # (n_bins,)
             dup_tgt = target[im,:]  # (n_dup,2)
-            se = prediction_se[i,mask,:]   # (n_pos,2) n_pos: 1 ~ n_slots
+            se = prediction_se[i,mask,:]   # (n_pos,2) n_pos: 1 ~ n_bins
             tiou_matrix = tIoU(dup_tgt,se,broadcast=True)  # (n_dup,n_pos)
             n_tgts.append(dup_tgt.shape[0])
             n_predictions.append(se.shape[0])
@@ -680,27 +680,27 @@ class DEBUG(nn.Module):
         kept_boxes1d = boxes1d[kept_ids,:]     # (n_left,2)
         return kept_boxes1d,kept_ids
 
-    def temporal_nms(self,prediction_se,slots_probs):
-        # prediction_se.shape == (n_uniq,n_slots,2) 
-        # slots_probs.shape == (n_uniq,n_slots)
-        n_uniq,n_slots = slots_probs.shape
-        slots_mask = []
+    def temporal_nms(self,prediction_se,bins_probs):
+        # prediction_se.shape == (n_uniq,n_bins,2) 
+        # bins_probs.shape == (n_uniq,n_bins)
+        n_uniq,n_bins = bins_probs.shape
+        bins_mask = []
         for i in range(n_uniq):
-            _,kept_ids = self._nms(prediction_se[i,:,:],slots_probs[i,:],self.nms_th)  # (n_left,)  n_left=1~n_slots
-            mask = torch.zeros(size=(n_slots,),device=slots_probs.device,dtype=torch.bool)
+            _,kept_ids = self._nms(prediction_se[i,:,:],bins_probs[i,:],self.nms_th)  # (n_left,)  n_left=1~n_bins
+            mask = torch.zeros(size=(n_bins,),device=bins_probs.device,dtype=torch.bool)
             mask = mask.scatter_(0,kept_ids,1)
-            slots_mask.append(mask)
+            bins_mask.append(mask)
         
-        slots_mask = torch.stack(slots_mask,dim=0)
-        return slots_mask
+        bins_mask = torch.stack(bins_mask,dim=0)
+        return bins_mask
 
     def temporal_pooling(self,regrs,scores):
         # regrs         (n_uniq, n_clips, 2*k)
-        # confs         (n_uniq, n_clips, k), k==self.num_slots
+        # confs         (n_uniq, n_clips, k), k==self.num_bins
         # fg_probs      (n_uniq, n_clips, k)
         
         n_uniq,n_clips,_ = scores.shape
-        regrs = regrs.reshape(n_uniq,n_clips,2,self.num_slots)
+        regrs = regrs.reshape(n_uniq,n_clips,2,self.num_bins)
 
         clip_range = torch.linspace(0,1,n_clips,device=regrs.device)  # shape == (n_clips,) (n_uniq,n_clips,2,k)
         start = clip_range[None,:,None] - regrs[:,:,0,:]    # (n_uniq, n_clips, k)
@@ -710,7 +710,7 @@ class DEBUG(nn.Module):
         pooled_se = []
         for qid in range(n_uniq):
             pooled_se_q = []
-            for k in range(self.num_slots):
+            for k in range(self.num_bins):
                 score = scores[qid,:,k]  # (n_clips,)
                 top_score,top_score_id = torch.max(score,dim=0)
                 mask1 = score > self.score_th * top_score  # (n_clips,)
@@ -745,7 +745,7 @@ if __name__ == "__main__":
         dim_feat = 1024,
         dim_clsme = 300,
         dim_hidden = 128,
-        num_slots  = 10,
+        num_bins  = 10,
         EntiNameEmb_path = "prepared_data/vidor_EntiNameEmb.npy",
         PredNameEmb_path = "prepared_data/vidor_PredNameEmb.npy",
         loss_factor = dict(

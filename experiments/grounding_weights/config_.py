@@ -3,7 +3,7 @@ model_config = dict(
     dim_feat = 1024,
     dim_clsme = 300,
     dim_hidden = 128,
-    num_slots  = 10,
+    num_bins  = 10,
     EntiNameEmb_path = "prepared_data/vidor_EntiNameEmb.npy",
     PredNameEmb_path = "prepared_data/vidor_PredNameEmb.npy",
     loss_factor = dict(
@@ -72,7 +72,7 @@ train_config = dict(
 inference_config = dict(
     score_th = 0.9, # for temporal_pooling
     tiou_th = 0.5,  # for temporal_pooling
-    slots_th = 0.2,# for multi-bin NMS
+    bins_th = 0.2,# for multi-bin NMS
     nms_th = 0.8,  # for multi-bin NMS
     eval_tiouths = 0.5  # for evaluate the grounding module itself only.
 )
