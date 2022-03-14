@@ -1,4 +1,5 @@
 
+
 import root_path
 
 import pickle
@@ -12,10 +13,12 @@ from dataloaders.dataloader_vidvrd import Dataset,Dataset_pku,Dataset_pku_i3d
 from models import BIG_C_vidvrd
 from utils.evaluate import EvalFmtCvtor
 from utils.utils_func import create_logger,parse_config_py
-from VidVRDhelperEvalAPIs import eval_visual_relation
-
+from VidVRDhelperEvalAPIs import eval_relation_with_gt
 
 torch.set_printoptions(sci_mode=False,precision=4,linewidth=160)
+
+
+
 
 def load_checkpoint(model,optimizer,scheduler,ckpt_path):
     checkpoint = torch.load(ckpt_path,map_location=torch.device('cpu'))
@@ -109,7 +112,9 @@ def inference_then_eval(
     logger.info("start inference...")
     logger.info("infer_config:{}".format(infer_config))
     logger.info("weight_path:{}".format(weight_path))
-    infer_result = {}
+
+    convertor = EvalFmtCvtor("vidvrd")
+    predict_relations = {}
     infer_result_for_save = {}
     for proposal_list,gt_graph_list in tqdm(dataloader):
         proposal_list = [p.to(device) for p in proposal_list]
@@ -118,9 +123,10 @@ def inference_then_eval(
             batch_triplets = model(proposal_list,topk=topk)
 
         assert len(proposal_list) == 1
+        proposal = proposal_list[0].to(torch.device("cpu"))
         video_name = proposal_list[0].video_name
         if batch_triplets[0] is None:
-            infer_result.update({video_name:None})
+            infer_result = None
             continue
 
         (
@@ -130,13 +136,11 @@ def inference_then_eval(
             uniq_query_ids,     # shape == (n_unique,)
         ) = batch_triplets[0]
         uniq_scores = torch.mean(uniq_scores,dim=-1)   # (n_unique,)
-        # print(uniq_scores.shape)
-        results = (uniq_quintuples.cpu(),uniq_scores.cpu(),uniq_dura_inters.cpu())
-        infer_result.update(
-            {video_name:results}
-        )
-        res = [x.cpu() for x in batch_triplets[0]]
-        infer_result_for_save[video_name] = res
+        infer_result = (uniq_quintuples.cpu(),uniq_scores.cpu(),uniq_dura_inters.cpu())
+        infer_result_for_save[video_name] = [x.cpu() for x in batch_triplets[0]]  # for debug
+
+        pr_result = convertor.to_eval_format_pr(proposal,infer_result,use_pku=use_pku)
+        predict_relations.update(pr_result)
 
     if save_infer_result:
         save_path = os.path.join(experiment_dir,'VidVRDtest_infer_result_{}.pkl'.format(save_tag))
@@ -144,37 +148,14 @@ def inference_then_eval(
             pickle.dump(infer_result_for_save,f)
         logger.info("infer_result saved at {}".format(save_path))
 
-    logger.info("start convert format for evaluate...")
-
-
-    convertor_all = EvalFmtCvtor("vidvrd")
-    
-    gt_relations = {}
-    predict_relations = {}
-    for proposal_list,gt_graph_list in tqdm(dataloader):
-        assert len(proposal_list) == 1
-        proposal = proposal_list[0]
-        gt_graph = gt_graph_list[0]
-
-        pr_triplet = infer_result[proposal.video_name]
-        
-        pr_result = convertor_all.to_eval_format_pr(proposal,pr_triplet,use_pku=use_pku)
-        predict_relations.update(pr_result) 
-        gt_result = convertor_all.to_eval_format_gt(gt_graph)
-        gt_relations.update(gt_result)
-    
-
-    logger.info('Computing average precision AP over {} videos...'.format(len(gt_relations)))
-    mean_ap, rec_at_n, mprec_at_n = eval_visual_relation(gt_relations,predict_relations,viou_threshold=0.5)
-    
-
-    logger.info('detection mean AP (used in challenge): {}'.format(mean_ap))
-    logger.info('detection recall: {}'.format(rec_at_n))
-    logger.info('tagging precision: {}'.format(mprec_at_n))
-
+    eval_relation_with_gt(
+        dataset_type="vidvrd",
+        logger=logger,
+        prediction_results=predict_relations
+    )
     
     if save_relation_json:
-        save_path = os.path.join(experiment_dir,'VidORval_predict_relations_{}.json'.format(save_tag))
+        save_path = os.path.join(experiment_dir,'VidVRDtest_predict_relations_{}.json'.format(save_tag))
         logger.info("saving predict_relations into {}...".format(save_path))
         with open(save_path,'w') as f:
             json.dump(predict_relations,f)
@@ -183,33 +164,11 @@ def inference_then_eval(
     logger.handlers.clear()
 
 
-def replace_state_dict_keys(state_dict):
-    """
-    This func is for debug
-    """
-    state_dict_new = {}
-    for name,v in state_dict.items():
-        if name == "pred_nodes_init":
-            name = "pred_query_init"
-        
-        if "fc_msg_recv" in name:
-            name = name.replace("fc_msg_recv","fc_rolewise")
-        
-        if ".layers." in name:
-            name = name.replace(".layers.",".")   # MLP --> nn.Sequential(...)
-        
-        if "fc_pred2logits.0" in name:
-            name = name.replace("fc_pred2logits.0","fc_pred2logits")
 
-        state_dict_new[name] = v
-
-
-    return state_dict_new
 
 
 if __name__ == "__main__":
 
-    
     parser = argparse.ArgumentParser(description="Object Detection Demo")
     
     parser.add_argument("--cfg_path", type=str,help="...")
@@ -223,7 +182,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
-    inference_then_eval(
+    if args.json_results_path is not None:
+        eval_relation_with_gt(
+            dataset_type="vidvrd",
+            json_results_path=args.json_results_path
+        )
+    else:
+        inference_then_eval(
         args.cfg_path,
         args.ckpt_path,
         save_tag=args.save_tag,
@@ -232,40 +197,48 @@ if __name__ == "__main__":
         gpu_id = args.cuda,
         save_infer_result=False,
         save_relation_json=False
-    )
+        )
+
     '''
+    python tools/eval_vidvrd2.py \
+        --json_results_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/VidORval_predict_relations_topk10_pTrue_epoch70.json
+    
     ### exp1
-    python tools/eval_vidvrd.py \
+    python tools/eval_vidvrd2.py \
         --cfg_path experiments/exp1/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth \
         --use_pku \
         --cuda 1 \
         --save_tag debug
     
+    2022-03-09 02:41:18,550 - detection mean AP (used in challenge): 0.1756102305112229
+    2022-03-09 02:41:18,551 - detection recall: {50: 0.095966905, 100: 0.109203726}
+    2022-03-09 02:41:18,551 - tagging precision: {1: 0.565, 5: 0.4430000091344118, 10: 0.32350000478327273}
+    2022-03-09 02:41:18,668 - log file have been saved at experiments/exp1/logfile/eval_debug.log
+    
+    
     ### exp2
-    python tools/eval_vidvrd.py \
+    python tools/eval_vidvrd2.py \
         --cfg_path experiments/exp2/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth \
         --use_pku \
         --cuda 2 \
         --save_tag debug
     
+    2022-03-09 02:39:43,260 - detection mean AP (used in challenge): 0.17679591933675462
+    2022-03-09 02:39:43,261 - detection recall: {50: 0.09638056, 100: 0.11292658}
+    2022-03-09 02:39:43,261 - tagging precision: {1: 0.56, 5: 0.438000009059906, 10: 0.32850000374019145}
+
+    
     ### exp3
-    python tools/eval_vidvrd.py \
+    python tools/eval_vidvrd2.py \
         --cfg_path experiments/exp3/config_.py \
         --ckpt_path /home/gkf/project/VidSGG-BIG/experiments/exp3/model_epoch_80.pth \
         --cuda 3 \
         --save_tag debug
     
+    2022-03-09 02:41:30,289 - detection mean AP (used in challenge): 0.26088200440572606
+    2022-03-09 02:41:30,289 - detection recall: {50: 0.14105481, 100: 0.16256464}
+    2022-03-09 02:41:30,289 - tagging precision: {1: 0.73, 5: 0.551, 10: 0.4}
+    2022-03-09 02:41:30,400 - log file have been saved at experiments/exp3/logfile/eval_debug.log
     '''
-
-    ##### ablation for PKU RoI+I3D
-    # cfg_path = "training_dir_reorganized/vidvrd/model_0v10_pku_i3d_cachePKUv2/config_.py"
-    # model_class_path = "Tempformer_model/model_0v10_pku_i3d.py"
-    # # model_class_path = "Tempformer_model/model_vrd02.py"
-    # train(model_class_path,cfg_path,device_ids=[1,2],from_checkpoint=False,ckpt_path=None)
-
-    # cfg_path = "training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/config_.py"
-    # model_class_path = "Tempformer_model/model_0v10.py"
-    # weight_path = "training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth"
-    # train(model_class_path,cfg_path,device_ids=[0],from_checkpoint=False,ckpt_path=None)

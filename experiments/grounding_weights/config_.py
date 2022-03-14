@@ -70,11 +70,11 @@ train_config = dict(
 
 
 inference_config = dict(
-    slots_th = 0.2,# for multi-bin NMS, originally 0.1, but I suppose that this can be replaced by maxProbth 0.2 (i.e., 减少一个超参数)
     score_th = 0.9, # for temporal_pooling
     tiou_th = 0.5,  # for temporal_pooling
+    slots_th = 0.2,# for multi-bin NMS
     nms_th = 0.8,  # for multi-bin NMS
-    eval_tiouths = 0.5
+    eval_tiouths = 0.5  # for evaluate the grounding module itself only.
 )
 
 if __name__ == "__main__":
