@@ -271,17 +271,6 @@ class DEBUG(nn.Module):
             [pred_cats[:,None],pred2so_cats,inter_dura],dim=-1
         ) # (n_pred,5)  format: [pred_catid,subj_catid,obj_catid,so_s,so_e]
         unique_tags,index_map = unique_with_idx_nd(query_tags)
-        # NOTE 在test的时候也应该用uniq， 而不是每个query输出最高的slot (如果这样的话两个相同query输出的slot都是一样的)
-        # 在test的时候每个query 输出高于阈值的slot， 那如何评价mIoU ？
-        # 可以这样， uniq和uniq 一一对应， 每个uniq输出高于阈值的slot， 
-        # 然后假设 gt这边有4个峰， 高于阈值的slot有5个， 每个gt峰和5个slot都算一遍IoU，取最大的那个。
-        # 最后再对所有的gt峰取iou的平均，这样的话baseline的mIoU 算法和这个是一致的，不用改
-        # if self.is_train:
-        #     unique_tags,index_map = unique_with_idx_nd(query_tags)
-        # else:
-        #     unique_tags = query_tags
-        #     index_map = None
-        # 
 
         pred_emb = self.PredNameEmb[unique_tags[:,0],:] # shape == (n_uniq,dim_meb) == (n_pr,300)
         sub_emb  = self.EntiNameEmb[unique_tags[:,1],:] # shape == (n_uniq,dim_emb) 
@@ -688,7 +677,7 @@ class DEBUG(nn.Module):
             index = index[left_ids]
         
         kept_ids = torch.stack(kept_ids,dim=0) # (n_left)
-        kept_boxes1d = boxes1d[kept_ids,:]             # (n_left,2)
+        kept_boxes1d = boxes1d[kept_ids,:]     # (n_left,2)
         return kept_boxes1d,kept_ids
 
     def temporal_nms(self,prediction_se,slots_probs):

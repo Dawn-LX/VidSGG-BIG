@@ -144,6 +144,7 @@ def evaluate_combined(
     save_tag="",
     experiment_dir=None,
     gpu_id = 0,
+    save_hit_infos = True,
     save_relation_json=False
 ):
 
@@ -254,11 +255,18 @@ def evaluate_combined(
         pr_result = convertor.to_eval_format_pr(proposal,infer_result)
         predict_relations.update(pr_result) 
 
-    eval_relation_with_gt(
+    hit_infos = eval_relation_with_gt(
         dataset_type="vidor",
         logger=logger,
-        prediction_results=predict_relations
+        prediction_results=predict_relations,
+        return_hit_infos=True
     )
+    if save_hit_infos:
+        save_path = os.path.join(experiment_dir,'VidORval_hit_infos_aft_grd_{}.pkl'.format(save_tag))
+        logger.info("saving hit_infos into {}...".format(save_path))
+        with open(save_path,'wb') as f:
+            pickle.dump(hit_infos,f)
+        logger.info("hit_infos have been saved at {}".format(save_path))
 
     if save_relation_json:
         save_path = os.path.join(experiment_dir,'VidORval_predict_relations_aft_grd_{}.json'.format(save_tag))
@@ -317,6 +325,7 @@ if __name__ == "__main__":
                 save_tag=args.save_tag,
                 experiment_dir=args.output_dir,
                 gpu_id = args.cuda,
+                save_hit_infos=True,
                 save_relation_json=False
             )
     
@@ -376,8 +385,6 @@ if __name__ == "__main__":
     2022-03-11 01:24:53,220 - tagging precision: {1: 0.6442307692307693, 5: 0.5180288552163312, 10: 0.4096788243086149}
     2022-03-11 01:24:54,514 - log file have been saved at experiments/exp5_with_grounding/logfile/eval_with_grd_epoch70.log
     '''
-
-    
 
     
     
