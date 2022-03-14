@@ -1,4 +1,5 @@
 # TODO
+paper : https://arxiv.org/abs/2112.04222
 the code is still being organized (an initial version will be completed before March 28, 2022).
 
 # TODO 
@@ -8,6 +9,7 @@ the code is still being organized (an initial version will be completed before M
 - Explain the EntiNameEmb and classeme and avg_clsme
 - explain the format of TrajProposal's feature, e.g., traj_classeme = traj_features[:,:,self.dim_feat:]
 - clean up utils_func
+- All scores are truncated to 4 decimal places (not rounded)
 
 # Data to release
 - I3D feature of VidOR train & val around 6G
