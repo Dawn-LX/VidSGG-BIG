@@ -35,6 +35,8 @@ Download the [ImageNet-VidVRD](https://xdshang.github.io/docs/imagenet-vidvrd.ht
 # Verify tracklets data & feature preparation by running dataloader_demo
 This section helps you download the tracklets data and place them correctly, as well as set the dataloader's config correctly. Successfully run the `tools/dataloader_demo.py` to verify all data & configs are set correctly.
 
+**NOTE** we use the term `proposal` in our code to represent tracklet proposals in video-level, which is totally different with the concept of "proposal" in "proposal-based methods" in our paper. In our paper, we use "proposals to represent paired subject-object tracklet segments. In contrast, here the term `proposal` in our code represents long-term object tracklets in video-level (i.e., without sliding window or video segments).
+
 ## Tracklet data for VidVRD 
 1. Download the tracklet with features at here:  [train](), [test](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876)
 
@@ -54,7 +56,7 @@ Put them under the dir of this project (or any other position if you use absolut
     ```
 
 
-**NOTE** we use the term `proposal` in our code to represent tracklet proposals in video-level, which is totally different with the concept of "proposal" in "proposal-based methods" in our paper. In our paper, we use "proposals to represent paired subject-object tracklet segments. In contrast, here the term `proposal` in our code represents long-term object tracklets in video-level (i.e., without sliding window or video segments).
+
 
 
 # Evaluation:
