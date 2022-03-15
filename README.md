@@ -1,18 +1,26 @@
 # Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs
 
-Official implementation (based on Pytorch) of CVPR2022 paper [Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs](https://arxiv.org/abs/2112.04222).
+Pytorch implementation of our paper [Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs](https://arxiv.org/abs/2112.04222), which is accepted by CVPR2022.
 
+We also won the 1st place of Video Relation Understanding (VRU) Grand Challenge in ACM Multimedia 2021, with a simplified version of our model.(The code for object tracklets generation is available at [here](https://github.com/Dawn-LX/VidVRD-tracklets))
 
 # Datasets
 
 # Evaluation:
 
-# Training
+# Training (TODO)
 
+the code for training is still being organized (an initial version will be completed before March 28, 2022).
 
-# TODO
-paper : 
-the code is still being organized (an initial version will be completed before March 28, 2022).
+## Data to release
+- I3D feature of VidOR train & val around 6G
+- VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G)
+- VidVRD traj `.npy` files (with feature) around 20G
+- cache file for train & val (for vidor)
+    - v9 for val (around 15G)
+    - v7clsme for train (14 parts, around 130G in total)
+- do not release cache file for vidvrd (they can generate them using VidVRD traj `.npy` files)
+
 
 # TODO 
 - add code for training
@@ -23,12 +31,5 @@ the code is still being organized (an initial version will be completed before M
 - clean up utils_func
 - All scores are truncated to 4 decimal places (not rounded)
 
-# Data to release
-- I3D feature of VidOR train & val around 6G
-- VidOR traj `.np` files (OnlyPos) (this has been released, around 12G)
-- VidVRD traj `.np` files (with feature) around 20G
-- cache file for train & val (for vidor)
-    - v9 for val (around 15G)
-    - v7clsme for train (14 parts, around 130G in total)
-- do not release cache file for vidvrd (they can generate them using VidVRD traj `.np` files)
+
 
