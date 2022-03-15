@@ -31,6 +31,7 @@ Download the [ImageNet-VidVRD](https://xdshang.github.io/docs/imagenet-vidvrd.ht
 
 # Evaluation:
 
+1. first generate the GT json file for evaluation 
 # Training (TODO)
 
 the code for training is still being organized (an initial version will be completed before March 28, 2022).
