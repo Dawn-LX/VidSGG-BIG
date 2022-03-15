@@ -45,6 +45,17 @@ the code for training is still being organized (an initial version will be compl
 - do not release cache file for vidvrd (they can generate them using VidVRD traj `.npy` files)
 
 
+# Citation
+If our work is helpful for your research, please cite our publication:
+```
+@inproceedings{gao2021classification,
+  title={Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs},
+  author={Gao, Kaifeng and Chen, Long and Niu, Yulei and Shao, Jian and Xiao, Jun},
+  booktitle={Proceedings of the IEEE/CVF conference on computer vision and pattern recognition},
+  year={2022}
+}
+```
+
 # TODO 
 - add code for training
 - add explanation for some term, e.g., "proposal" "use_pku"
