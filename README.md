@@ -47,7 +47,7 @@ Put them under the dir of this project (or any other position if you use absolut
 
 4. modify the config file at `experiments/demo/config_.py`, where `proposal_dir` is the dir of tracklet with features, `i3d_dir` is the dir of tracklets' I3D features, and `ann_dir` is `datasets/vidvrd-dataset`.
 
-5. Verify all data & configs are set correctly. e.g., for PKU's tracklets with I3D features (refer to `tools/dataloader_demo.py`):
+5. Verify all data & configs are set correctly. e.g., for PKU's tracklets with I3D features, run the following commands: (refer to `tools/dataloader_demo.py` for more details.):
     ```
     python tools/dataloader_demo.py \
             --cfg_path experiments/demo/config_.py \
