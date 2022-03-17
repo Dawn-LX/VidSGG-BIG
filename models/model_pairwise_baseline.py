@@ -376,11 +376,12 @@ class Base_C(nn.Module):
         uniq_dura_inters = uniq_dura_inters[mask,:]
         
 
-        # sort by score and select top200
-        top200ids = uniq_scores.mean(dim=-1).argsort(descending=True)[:200]
-        uniq_scores = uniq_scores[top200ids,:]
-        uniq_quintuples = uniq_quintuples[top200ids,:]
-        uniq_dura_inters = uniq_dura_inters[top200ids,:]
+        if self.rt_triplets_topk > 0:
+            # sort by score and select top200 (for save GPU memory when doing the grounding stage)
+            top200ids = uniq_scores.mean(dim=-1).argsort(descending=True)[:self.rt_triplets_topk]
+            uniq_scores = uniq_scores[top200ids,:]
+            uniq_quintuples = uniq_quintuples[top200ids,:]
+            uniq_dura_inters = uniq_dura_inters[top200ids,:]
 
         uniq_query_ids = torch.empty(size=(uniq_scores.shape[0],))
 
