@@ -75,7 +75,48 @@ Put them under the dir of this project (or any other position if you use absolut
         --dataset_type vidor \
         --save_path datasets/GT_json_for_eval/VidORval_gts.json
     ```
+2. Download model weights for different exps [here](), and put them in the `experiments/` dir.
+3. Refer to `experiments/readme.md` for the correspondence between the exp ids and the table ids in our paper.
+4. For **VidVRD**, run the following commands to evaluate different exps: (refer to `tools/eval_vidvrd.py` for more details)
 
+    e.g., for exp1
+    ```
+    python tools/eval_vidvrd.py \
+        --cfg_path experiments/exp1/config_.py \
+        --ckpt_path experiments/exp1/model_epoch_80.pth \
+        --use_pku \
+        --cuda 1 \
+        --save_tag debug
+    ```
+5. For **VidOR**, refer to `tools/eval_vidor.py` for more details. 
+
+    Run the following commands to evaluate BIG-C (i.e., only the classification stage):
+    ```
+    python tools/eval_vidor.py \
+        --eval_cls_only \
+        --cfg_path experiments/exp4/config_.py \
+        --ckpt_path experiments/exp4/model_epoch_60.pth \
+        --save_tag epoch60_debug \
+        --cuda 1
+    ```
+    Run the following commands to evaluate BIG based on the output of cls stage (you need run BIG-C first and save the infer_results).
+    ```
+    python tools/eval_vidor.py \
+        --cfg_path experiments/grounding_weights/config_.py \
+        --ckpt_path experiments/grounding_weights/model_epoch_70.pth \
+        --output_dir experiments/exp4_with_grounding \
+        --cls_stage_result_path experiments/exp4/VidORval_infer_results_topk3_epoch60_debug.pkl \
+        --save_tag with_grd_epoch70 \
+        --cuda 1
+    ```
+    Run the following commands to evaluate the fraction recall (refer to table-6 in our paper, you need run BIG first and save the hit_infos).
+    ```
+    python tools/eval_fraction_recall.py \
+        --cfg_path experiments/grounding_weights/config_.py \
+        --hit_info_path  experiments/exp5_with_grounding/VidORval_hit_infos_aft_grd_with_grd_epoch70.pkl
+    ```
+
+**NOTE** from frame-level bbox annotations to video-level tracklets GTs.
 # Training (TODO)
 
 the code for training is still being organized (an initial version will be completed before March 28, 2022).

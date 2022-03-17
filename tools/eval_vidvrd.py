@@ -200,13 +200,13 @@ if __name__ == "__main__":
         )
 
     '''
-    python tools/eval_vidvrd2.py \
+    python tools/eval_vidvrd.py \
         --json_results_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/VidORval_predict_relations_topk10_pTrue_epoch70.json
     
     ### exp1
-    python tools/eval_vidvrd2.py \
+    python tools/eval_vidvrd.py \
         --cfg_path experiments/exp1/config_.py \
-        --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth \
+        --ckpt_path experiments/exp1/model_epoch_80.pth \
         --use_pku \
         --cuda 1 \
         --save_tag debug
@@ -218,9 +218,9 @@ if __name__ == "__main__":
     
     
     ### exp2
-    python tools/eval_vidvrd2.py \
+    python tools/eval_vidvrd.py \
         --cfg_path experiments/exp2/config_.py \
-        --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth \
+        --ckpt_path experiments/exp2/model_epoch_70.pth \
         --use_pku \
         --cuda 2 \
         --save_tag debug
@@ -231,9 +231,9 @@ if __name__ == "__main__":
 
     
     ### exp3
-    python tools/eval_vidvrd2.py \
+    python tools/eval_vidvrd.py \
         --cfg_path experiments/exp3/config_.py \
-        --ckpt_path /home/gkf/project/VidSGG-BIG/experiments/exp3/model_epoch_80.pth \
+        --ckpt_path experiments/exp3/model_epoch_80.pth \
         --cuda 3 \
         --save_tag debug
     

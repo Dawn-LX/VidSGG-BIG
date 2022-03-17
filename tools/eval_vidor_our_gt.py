@@ -199,7 +199,7 @@ if __name__ == "__main__":
 
     '''
     ### table-3 BIG-C RoI
-    python tools/eval_vidor.py \
+    python tools/eval_vidor_our_gt.py \
         --cfg_path experiments/exp4/config_.py \
         --ckpt_path experiments/exp4/model_epoch_60.pth \
         --save_tag epoch60_debug \
@@ -214,7 +214,7 @@ if __name__ == "__main__":
 
     '''
     ### table-3 BIG-C RoI + Lang
-    python tools/eval_vidor.py \
+    python tools/eval_vidor_our_gt.py \
         --cfg_path experiments/exp5/config_.py \
         --ckpt_path experiments/exp5/model_epoch_60.pth \
         --save_tag epoch60_debug \
@@ -234,7 +234,7 @@ if __name__ == "__main__":
 
     '''
     ### table-2 Base-C
-    python tools/eval_vidor.py \
+    python tools/eval_vidor_our_gt.py \
         --use_baseline \
         --cfg_path experiments/exp6/config_.py \
         --ckpt_path experiments/exp6/model_epoch_80.pth \

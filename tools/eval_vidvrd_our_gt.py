@@ -235,7 +235,7 @@ if __name__ == "__main__":
     )
     '''
     ### exp1
-    python tools/eval_vidvrd.py \
+    python tools/eval_vidvrd_our_gt.py \
         --cfg_path experiments/exp1/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_cachePKUv1_rightcatid/model_epoch_80.pth \
         --use_pku \
@@ -243,7 +243,7 @@ if __name__ == "__main__":
         --save_tag debug
     
     ### exp2
-    python tools/eval_vidvrd.py \
+    python tools/eval_vidvrd_our_gt.py \
         --cfg_path experiments/exp2/config_.py \
         --ckpt_path /home/gkf/project/VideoGraph/training_dir_reorganized/vidvrd/model_0v10_pku_i3dclsme2_cachePKUv2/model_epoch_70.pth \
         --use_pku \
@@ -251,7 +251,7 @@ if __name__ == "__main__":
         --save_tag debug
     
     ### exp3
-    python tools/eval_vidvrd.py \
+    python tools/eval_vidvrd_our_gt.py \
         --cfg_path experiments/exp3/config_.py \
         --ckpt_path /home/gkf/project/VidSGG-BIG/experiments/exp3/model_epoch_80.pth \
         --cuda 3 \

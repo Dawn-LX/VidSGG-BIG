@@ -23,7 +23,7 @@ def evaluate_cls_stage(
     save_tag="",
     experiment_dir=None,
     gpu_id = 0,
-    save_infer_result = True,
+    save_infer_results = True,
     save_relation_json=False
 ):
 
@@ -121,7 +121,7 @@ def evaluate_cls_stage(
         logger=logger,
         prediction_results=predict_relations
     )
-    if save_infer_result:
+    if save_infer_results:
         save_path =  os.path.join(experiment_dir,'VidORval_infer_results_{}.pkl'.format(save_tag))
         logger.info("saving infer_results into {}...".format(save_path))
         with open(save_path,'wb') as f:
@@ -316,7 +316,7 @@ if __name__ == "__main__":
                 save_tag=args.save_tag,
                 experiment_dir=args.output_dir,
                 gpu_id = args.cuda,
-                save_infer_result=True,
+                save_infer_results=True,
                 save_relation_json=False
             )
         else:
