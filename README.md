@@ -116,7 +116,8 @@ Put them under the dir of this project (or any other position if you use absolut
         --hit_info_path  experiments/exp5_with_grounding/VidORval_hit_infos_aft_grd_with_grd_epoch70.pkl
     ```
 
-**NOTE** from frame-level bbox annotations to video-level tracklets GTs.
+    **NOTE** We also provide another evaluation scripts (i.e., `tools/eval_vidvrd_our_gt.py` and `tools/eval_vidor_our_gt.py`). The main difference lies in the process of constructing GT tracklets (i.e., from frame-level bbox annotations to video-level tracklets GTs). Compared to VidVRD-helper's GTs, here we perform linear interpolation for fragmented GT tracklets. Consequently the evaluation results have slight differences.  **NOTE**: Nevertheless, the results reported in our paper are evaluated with VidVRD-helper's GTs (i.e., `tools/eval_vidvrd.py` and `tools/eval_vidor.py`) to ensure fair comparisons.
+    
 # Training (TODO)
 
 the code for training is still being organized (an initial version will be completed before March 28, 2022).
