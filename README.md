@@ -75,7 +75,7 @@ Put them under the dir of this project (or any other position if you use absolut
         --dataset_type vidor \
         --save_path datasets/GT_json_for_eval/VidORval_gts.json
     ```
-2. Download model weights for different exps [here](), and put them in the `experiments/` dir.
+2. Download model weights for different exps [here (to be released)](), and put them in the `experiments/` dir.
 3. Refer to `experiments/readme.md` for the correspondence between the exp ids and the table ids in our paper.
 4. For **VidVRD**, run the following commands to evaluate different exps: (refer to `tools/eval_vidvrd.py` for more details)
 
