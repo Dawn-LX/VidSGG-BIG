@@ -99,7 +99,7 @@ Put them under the dir of this project (or any other position if you use absolut
         --save_tag epoch60_debug \
         --cuda 1
     ```
-    Run the following commands to evaluate BIG based on the output of cls stage (you need run BIG-C first and save the infer_results).
+    Run the following commands to evaluate BIG based on the output of cls stage (you need run BIG-C first and save the `infer_results`).
     ```
     python tools/eval_vidor.py \
         --cfg_path experiments/grounding_weights/config_.py \
@@ -109,7 +109,7 @@ Put them under the dir of this project (or any other position if you use absolut
         --save_tag with_grd_epoch70 \
         --cuda 1
     ```
-    Run the following commands to evaluate the fraction recall (refer to table-6 in our paper, you need run BIG first and save the hit_infos).
+    Run the following commands to evaluate the fraction recall (refer to table-6 in our paper, you need run BIG first and save the `hit_infos`).
     ```
     python tools/eval_fraction_recall.py \
         --cfg_path experiments/grounding_weights/config_.py \
