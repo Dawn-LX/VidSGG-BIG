@@ -57,7 +57,7 @@ Put them under the dir of this project (or any other position if you use absolut
 
 ## Tracklet data for VidOR 
 
-- TODO
+- Download the I3D feature of train & val videos (used for grounding stage) at [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg)
 
 # Evaluation:
 
@@ -124,10 +124,12 @@ Put them under the dir of this project (or any other position if you use absolut
 
 the code for training is still being organized (an initial version will be completed before March 28, 2022).
 
-## Data to release
-- I3D feature of VidOR train & val around 6G
-- VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G)
+# Data Release Summarize
+- model weights for all exps (**Done**, dcd google drive, [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing))
+- I3D feature of VidOR train & val around 3.3G (**Done**, dcd MEGA cloud, [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg))
+- VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G) **Done** (jypcxlx google drive) refer to this repository: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
 - VidVRD traj `.npy` files (with feature) around 20G
+    - VidVRD-test **Done**, gkf zju cloud, [here](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876)
 - cache file for train & val (for vidor)
     - v9 for val (around 15G)
     - v7clsme for train (14 parts, around 130G in total)
@@ -154,4 +156,5 @@ If our work is helpful for your research, please cite our publication:
 - clean up utils_func
 - All scores are truncated to 4 decimal places (not rounded)
 
-
+# TODO 
+- add the format of `.npy` file (tracklet with features & video I3D features)
