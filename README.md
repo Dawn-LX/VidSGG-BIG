@@ -122,7 +122,7 @@ Put them under the dir of this project (or any other position if you use absolut
     
 # Training (TODO)
 
-the code for training is still being organized (an initial version will be completed before March 28, 2022).
+the code for training is still being organized (an initial version will be completed before April 8, 2022).
 
 # Data Release Summarize
 - model weights for all exps (**Done**, dcd google drive, [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing))
