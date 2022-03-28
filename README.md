@@ -123,8 +123,10 @@ Put them under the dir of this project (or any other position if you use absolut
 # Training (TODO)
 
 the code for training is still being organized (an initial version will be completed before April 8, 2022).
+## **I'm still waiting for my credit card to buy extra cloud storage : (**
 
-# Data Release Summarize
+# Data Release Summarize 
+
 - model weights for all exps (**Done**, dcd google drive, [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing))
 - I3D feature of VidOR train & val around 3.3G (**Done**, dcd MEGA cloud, [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg))
 - VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G) **Done** (jypcxlx google drive) refer to this repository: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
