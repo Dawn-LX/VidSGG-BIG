@@ -133,7 +133,7 @@ the code for training is still being organized (an initial version will be compl
 - VidVRD traj `.npy` files (with feature) around 20G
     - VidVRD-test **Done**, gkf zju cloud, [here](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876)
 - cache file for train & val (for vidor)
-    - v9 for val (around 15G)
+    - v9 for val (around 19G)
     - v7clsme for train (14 parts, around 130G in total)
 - do not release cache file for vidvrd (they can generate them using VidVRD traj `.npy` files)
 
