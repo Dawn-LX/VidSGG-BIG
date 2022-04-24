@@ -122,7 +122,7 @@ Put them under the dir of this project (or any other position if you use absolut
     
 # Training (TODO)
 
-the code for training is still being organized (an initial version will be completed before April 8, 2022).
+the code for training is still being organized (an initial version will be completed before April 30, 2022).
 ## **I'm still waiting for my credit card to buy extra cloud storage : (**
 
 # Data Release Summarize 
