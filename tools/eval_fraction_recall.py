@@ -110,7 +110,7 @@ def evaluate(cfg_path,hit_info_path,experiment_dir=None):
             continue
             
         hit_scores = torch.from_numpy(hit_scores)
-        gt2hit_ids = torch.from_numpy(gt2hit_ids)
+        gt2hit_ids = torch.from_numpy(gt2hit_ids)  # shape == (n_gt,)
 
         ## for all
         n_gt,n_hits =  calculate_n_hits(gt_5tuple,gt2hit_ids,n_recalls)

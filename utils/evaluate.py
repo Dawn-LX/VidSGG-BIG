@@ -149,7 +149,87 @@ class EvalFmtCvtor(object):
         # results_per_video = sorted(results_per_video,key=lambda x: x["score"],reverse=True)  # large --> small
         # results_per_video = results_per_video[:100]
         return {video_name : results_per_video}
+
+
     
+    def to_eval_format_pr_wo_cutoff(self,proposal,pr_triplet,preserve_debug_info=False,use_pku=False):
+        '''
+        this func is without traj_cutoff, this cause bad performance
+        '''
+        if use_pku:
+            pr_entiId2Name = PKU_vidvrd_CatId2name
+        else:
+            pr_entiId2Name = self.entiId2Name
+
+        video_name = self._reset_video_name(proposal.video_name)
+        if pr_triplet is None:
+            return {video_name : []}
+        
+        traj_bboxes = proposal.bboxes_list       # list[tensor], len==num_proposals, shape==(n_frames,4)
+        durations_list = proposal.traj_durations.clone() # shape == (num_proposals,2)
+        durations_list = durations_list.tolist() 
+
+        (  
+            pr_qtuple,      # shape == (n_pr,5)  # format: [pred_catid,subj_catid,obj_catid,subj_tid,obj_tid]
+            pr_score,       # shape == (n_pr,)
+            inter_dura,      # shape == (n_pr,2) 
+            # debug_info
+        ) = pr_triplet
+
+        n_pr,_ = pr_qtuple.shape
+        # pred_duras_float = debug_info
+        if isinstance(pr_qtuple,torch.Tensor):
+            pr_qtuple = pr_qtuple.tolist()
+        if isinstance(pr_score,torch.Tensor):
+            pr_score = pr_score.tolist()
+        if isinstance(inter_dura,torch.Tensor):
+            inter_dura = inter_dura.tolist()
+        
+        results_per_video = []
+        for p_id in range(n_pr):
+            pred_catid,subj_catid,obj_catid,subj_tid,obj_tid = pr_qtuple[p_id]
+            if pred_catid == 0:
+                continue
+            
+            ori_sub_traj = traj_bboxes[subj_tid]
+            ori_obj_traj = traj_bboxes[obj_tid]
+
+            dura_ = (inter_dura[p_id][0],inter_dura[p_id][1]+1)
+            
+            subject_dura_ = durations_list[subj_tid]
+            subject_dura = (subject_dura_[0],subject_dura_[1]+1) # 转为前闭后开区间
+            object_dura_ = durations_list[obj_tid]
+            object_dura = (object_dura_[0],object_dura_[1]+1)
+            # print(subject_dura,dura_,"subject_dura,dura_")
+            subject_traj = traj_cutoff(ori_sub_traj,subject_dura,dura_,video_name)
+            object_traj = traj_cutoff(ori_obj_traj,object_dura,dura_,video_name)
+            assert len(subject_traj) == len(object_traj)
+            assert len(subject_traj) == dura_[1] - dura_[0]
+
+            # pr_float_dura = pred_duras_float[p_id,:].tolist()
+            
+            result_per_triplet = dict()
+            result_per_triplet["triplet"] = [pr_entiId2Name[subj_catid],self.predId2Name[pred_catid],pr_entiId2Name[obj_catid]]
+            result_per_triplet["duration"] = dura_   # [strat_fid, end_fid)   starting (inclusive) and ending (exclusive) frame ids
+            result_per_triplet["score"] = float(pr_score[p_id])
+            result_per_triplet["sub_traj"] = ori_sub_traj.cpu().tolist()     # len == duration_spo[1] - duration_spo[0]
+            result_per_triplet["obj_traj"] = ori_obj_traj.cpu().tolist()
+            
+            ################## for debug #################
+            if preserve_debug_info:
+                result_per_triplet["triplet_tid"] = (int(subj_tid),int(pred_catid),int(obj_tid))  # 如果用 [s_id,p_id,p_catid,o_id]的话，那肯定是唯一的
+                # result_per_triplet["debug_dura"] = {"s":subject_dura,"o":object_dura,"inter":dura_,"pr_float_dura":pr_float_dura}
+                result_per_triplet["debug_dura"] = {"s":subject_dura,"o":object_dura,"inter":dura_}
+            ################## for debug #################
+            
+            results_per_video.append(result_per_triplet)
+        
+
+        # results_per_video = sorted(results_per_video,key=lambda x: x["score"],reverse=True)  # large --> small
+        # results_per_video = results_per_video[:100]
+        return {video_name : results_per_video}
+    
+
 
     def to_eval_format_gt(self,gt_graph):
         video_name = self._reset_video_name(gt_graph.video_name)
