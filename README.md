@@ -150,7 +150,8 @@ the code for training is still being organized (an initial version will be compl
 - I3D feature of VidOR train & val around 3.3G (**Done**, dcd MEGA cloud, [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg))
 - VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G) **Done** (jypcxlx google drive) refer to this repository: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
 - VidVRD traj `.npy` files (with feature) around 20G
-    - VidVRD-test **Done**, gkf zju cloud, [here](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876)
+    - VidVRD-test **Done**, gkf zju cloud, [here](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876) (3.87G)
+    - VidVRD-train **TODO**
 - cache file for train & val (for vidor)
     - v9 for val (around 19G) (dcd MEGA cloud [here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw))
     - v7clsme for train (14 parts, around 130G in total)
