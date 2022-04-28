@@ -10,8 +10,9 @@ _ext
 *.npy
 *.json
 
-# log files
+# log files & tensorboard logs
 *.log
+**/events.*
 
 # ipython/jupyter notebooks
 *.ipynb
