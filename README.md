@@ -59,7 +59,8 @@ Put them under the dir of this project (or any other position if you use absolut
 
 - Download the I3D feature of train & val videos (used for grounding stage) at [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg)
 
-# Evaluation:
+# Evaluation: 
+**First, read [Tracklet data for VidVRD](#verify-tracklets-data--feature-preparation-by-running-dataloaderdemo) and make sure you run `tools/dataloader_demo.py` successfully**
 
 1. first generate the GT json file for evaluation:
     
