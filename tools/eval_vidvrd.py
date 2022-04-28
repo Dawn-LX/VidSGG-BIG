@@ -18,8 +18,6 @@ from VidVRDhelperEvalAPIs import eval_relation_with_gt
 torch.set_printoptions(sci_mode=False,precision=4,linewidth=160)
 
 
-
-
 def load_checkpoint(model,optimizer,scheduler,ckpt_path):
     checkpoint = torch.load(ckpt_path,map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint['model_state_dict'])
