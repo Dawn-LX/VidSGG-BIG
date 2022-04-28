@@ -120,7 +120,26 @@ Put them under the dir of this project (or any other position if you use absolut
 - We also provide another evaluation scripts (i.e., `tools/eval_vidvrd_our_gt.py` and `tools/eval_vidor_our_gt.py`). The main difference lies in the process of constructing GT tracklets (i.e., from frame-level bbox annotations to video-level tracklets GTs). Compared to VidVRD-helper's GTs, here we perform linear interpolation for fragmented GT tracklets. Consequently the evaluation results have slight differences.
 - Nevertheless, the results reported in our paper are evaluated with VidVRD-helper's GTs (i.e., `tools/eval_vidvrd.py` and `tools/eval_vidor.py`) to ensure fair comparisons.
     
-# Training (TODO)
+# Training
+
+1. For **VidVRD**, run the following commands to train for different exps: (refer to `tools/train_vidvrd.py` for more details)
+
+    e.g., for exp1
+    ```
+    CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidvrd.py \
+        --cfg_path experiments/exp1/config_.py \
+        --use_pku \
+        --save_tag retrain
+    ```
+
+2. For **VidOR**, TODO ...
+
+    e.g., for exp4
+    ```
+    ...
+    ```
+
+
 
 the code for training is still being organized (an initial version will be completed before April 30, 2022).
 ## **I'm still waiting for my credit card to buy extra cloud storage : (**
