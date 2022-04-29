@@ -13,7 +13,7 @@ from tqdm import tqdm
 from collections import defaultdict
 
 from dataloaders.dataloader_vidor import Dataset
-from models import BIG_C_vidor,Base_C
+from models import BIG_C_vidor,Base_C,DEBUG
 
 from utils.DataParallel import VidSGG_DataParallel
 from utils.utils_func import create_logger,parse_config_py,dura_intersection_ts,vIoU_ts
@@ -502,10 +502,6 @@ def train_grounding_stage(
     from_checkpoint = False,
     ckpt_path = None
 ):
-    ## import model class 
-    temp = model_class_path.split('.')[0].split('/')
-    model_class_path = ".".join(temp)
-    DEBUG = import_module(model_class_path).DEBUG
 
     ## create dirs and logger
     if experiment_dir == None:
@@ -536,8 +532,9 @@ def train_grounding_stage(
     trainable_num = sum([p.numel() for p in model.parameters() if p.requires_grad])
     logger.info("number of model.parameters: total:{},trainable:{}".format(total_num,trainable_num))
 
-    model = VORG_DataParallel(model,device_ids=device_ids)
-    model = model.cuda("cuda:{}".format(device_ids[0]))
+    device_ids = list(range(torch.cuda.device_count()))
+    model = VidSGG_DataParallel(model,device_ids=device_ids)
+    model = model.cuda()
 
     # training configs
 
@@ -566,12 +563,10 @@ def train_grounding_stage(
             dataset_len,batch_size,dataloader_len,batch_size,dataloader_len,batch_size*dataloader_len
         )
     )
-    
 
     milestones = [int(m*dataset_len/batch_size) for m in epoch_lr_milestones]
     optimizer = torch.optim.Adam(model.parameters(), lr = initial_lr)  
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones,gamma=lr_decay)
-
 
     if from_checkpoint:
         model,optimizer,scheduler,crt_epoch,batch_size_ = load_checkpoint(model,optimizer,scheduler,ckpt_path)
@@ -637,6 +632,8 @@ def train_grounding_stage(
     save_path = os.path.join(experiment_dir,'model_epoch_{}_{}.pth'.format(total_epoch,save_tag))
     save_checkpoint(batch_size,epoch,model,optimizer,scheduler,save_path)
     logger.info("checkpoint is saved: {}".format(save_path))
+    logger.info(f"log saved at {log_path}")
+    logger.handlers.clear()
 
 
 
@@ -694,9 +691,16 @@ if __name__ == "__main__":
         --cfg_path experiments/exp5/config_.py \
         --save_tag retrain
     
-    ## for exp6
+    ## for exp6 (80 epochs, around 6.5 hours for 1 RTX 2080Ti with batch_size=4)
     CUDA_VISIBLE_DEVICES=1 python tools/train_vidor.py \
         --train_baseline \
         --cfg_path experiments/exp6/config_.py \
+        --save_tag retrain
+    
+
+    ## for train grounding stage
+    CUDA_VISIBLE_DEVICES=2,3 python tools/train_vidor.py \
+        --train_grounding \
+        --cfg_path experiments/grounding_weights/config_.py \
         --save_tag retrain
     '''

@@ -32,11 +32,9 @@ test_dataset_config = dict(
 
 train_dataset_config = dict(
     split = "train",
-    ann_dir = "datasets/vidor-dataset/annotation",
-    video_dir = "datasets/vidor-dataset/train_videos",
-    # NOTE classeme_dir & proposal_dir 中的东西还在kgl103上，因为之前直接在103上tocache了
-    video_feature_dir = "/home/gkf/I3D_Pytorch/I3D_clip_features/clip16_overlap0.5",
-    classeme_dir = "proposals/miss60_minscore0p3/VidORtrain_freq1_classeme",
+    ann_dir = "/home/gkf/project/VidVRD_VidOR/vidor-dataset/annotation",
+    video_dir = "/home/gkf/project/VidVRD_VidOR/vidor-dataset/train_videos",
+    classeme_dir = "/home/gkf/project/deepSORT/tracking_results/miss60_minscore0p3/VidORtrain_freq1_classeme",
     proposal_dir = {
         0:"proposals/miss60_minscore0p3/VidORtrain_freq1_part01",
         1:"proposals/miss60_minscore0p3/VidORtrain_freq1_part02",
@@ -53,12 +51,15 @@ train_dataset_config = dict(
         12:"proposals/miss60_minscore0p3/VidORtrain_freq1_part13",
         13:"proposals/miss60_minscore0p3/VidORtrain_freq1_part14",
     },
+    cache_dir = "datasets/cache",
+    cache_tag = "MEGAv7",
     dim_boxfeature = 1024,
     min_frames_th = 15,
     max_proposal = 180,
     max_preds = 200,
     score_th = 0.4   
 )
+
 
 train_config = dict(
     batch_size          = 8,
