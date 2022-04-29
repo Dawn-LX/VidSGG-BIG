@@ -165,10 +165,6 @@ Put them under the dir of this project (or any other position if you use absolut
         --save_tag retrain
     ```
 
-
-the code for training is still being organized (an initial version will be completed before April 30, 2022).
-## **I'm still waiting for my credit card to buy extra cloud storage : (**
-
 # Data Release Summarize 
 
 - model weights for all exps (**Done**, dcd google drive, [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing))
@@ -179,7 +175,7 @@ the code for training is still being organized (an initial version will be compl
     - VidVRD-train **Done** dcd MEGA cloud [here](https://mega.nz/folder/1QA31RaK#pEP60O-ENr-5k_9ByoJhag) (13G)
 - cache file for train & val (for vidor)
     - v9 for val (around 19G) (dcd MEGA cloud [here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw))
-    - v7clsme for train (14 parts, around 130G in total)
+    - v7clsme for train (14 parts, around 130G in total [to be released]())
 - do not release cache file for vidvrd (they can generate them using VidVRD traj `.npy` files)
 
 
