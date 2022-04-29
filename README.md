@@ -133,6 +133,7 @@ Put them under the dir of this project (or any other position if you use absolut
 **NOTE** 
 - We also provide another evaluation scripts (i.e., `tools/eval_vidvrd_our_gt.py` and `tools/eval_vidor_our_gt.py`). The main difference lies in the process of constructing GT tracklets (i.e., from frame-level bbox annotations to video-level tracklets GTs). Compared to VidVRD-helper's GTs, here we perform linear interpolation for fragmented GT tracklets. Consequently the evaluation results have slight differences.
 - Nevertheless, the results reported in our paper are evaluated with VidVRD-helper's GTs (i.e., `tools/eval_vidvrd.py` and `tools/eval_vidor.py`) to ensure fair comparisons.
+- In our paper, all scores are truncated to 4 decimal places (not rounded)
     
 # Training
 
@@ -189,15 +190,3 @@ If our work is helpful for your research, please cite our publication:
   year={2022}
 }
 ```
-
-# TODO 
-- add code for training
-- add explanation for some term, e.g., "proposal" "use_pku"
-- change the term slots to bins
-- Explain the EntiNameEmb and classeme and avg_clsme
-- explain the format of TrajProposal's feature, e.g., traj_classeme = traj_features[:,:,self.dim_feat:]
-- clean up utils_func
-- All scores are truncated to 4 decimal places (not rounded)
-
-# TODO 
-- add the format of `.npy` file (tracklet with features & video I3D features)
