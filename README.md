@@ -62,7 +62,7 @@ Put them under the dir of this project (or any other position if you use absolut
 ## Tracklet data for VidOR 
 
 - Download the I3D feature of train & val videos (used for grounding stage) at [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg)
-- Download the pre-prepared cache data for VidOR-val ([here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw), around 19G), VidOR-train ([here, to be released](), 14 parts in total, around 130G), and put them in `datasets/cache`.
+- Download the pre-prepared cache data for VidOR-val ([here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw), around 19G), VidOR-train ([to be released](), 14 parts in total, around 130G), and put them in `datasets/cache`.
 - **Some Notes** 
 
     Ideally, you can prepare these cache data from `.npy` files (as did in VidVRD). However, due to some ancient coding reasons, we extract bbox RoI feature for each frame, which makes these `.npy` files too large (**827G** for VidOR-train and **90G** for VidOR-val). Therefore, we only release pre-prepared cache data as above.
