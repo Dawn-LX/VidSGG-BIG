@@ -116,15 +116,15 @@ def evaluate(gt, pred, use_07_metric=True, thresh_t=0.5):
         ap_class[c] = ap
     
     # compute mean ap and print
-    print('=' * 30)
+    # print('=' * 30)
     ap_class = sorted(ap_class.items(), key=lambda ap_class: ap_class[0])
     total_ap = 0.
     for i, (category, ap) in enumerate(ap_class):
-        print('{:>2}{:>20}\t{:.4f}'.format(i+1, category, ap))
+        # print('{:>2}{:>20}\t{:.4f}'.format(i+1, category, ap))
         total_ap += ap
     mean_ap = total_ap / gt_class_num 
-    print('=' * 30)
-    print('{:>22}\t{:.4f}'.format('mean AP', mean_ap))
+    # print('=' * 30)
+    # print('{:>22}\t{:.4f}'.format('mean AP', mean_ap))
 
     return mean_ap, ap_class
 

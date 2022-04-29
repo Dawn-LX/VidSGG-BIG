@@ -259,7 +259,7 @@ class BIG_C(nn.Module):
         self.n_deco_layers = config["n_deco_layers"]
         self.n_att_head = config["n_att_head"]
         self.num_querys = config["num_querys"]
-        self.num_anchors = self.num_querys   # NOTE this `num_anchors` has been deprecated
+        self.num_anchors = self.num_querys   # NOTE this `num_anchors` has been deprecated, this term is used in some ancient code
 
         self.bias_matrix_path = config["bias_matrix_path"]
         self.EntiNameEmb_path = config.get("EntiNameEmb_path",None)

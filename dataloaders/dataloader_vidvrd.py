@@ -214,7 +214,7 @@ class Dataset(object):
         traj_proposal, gt_graph = deepcopy(self.data_dict[video_name]) 
 
 
-        if traj_proposal.num_proposals > 0 or (not self.is_train):
+        if traj_proposal.num_proposals > 0 or self.split == "test":
             return traj_proposal, gt_graph
         else:
             idx = random.randint(0,len(self.video_name_list)-1)

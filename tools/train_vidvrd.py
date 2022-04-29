@@ -1,8 +1,4 @@
 
-# this is a draft code
-# the training code is still being organized
-# 
-
 import root_path
 import argparse
 import os
@@ -192,7 +188,8 @@ def train(
     save_path = os.path.join(experiment_dir,'model_epoch_{}_{}.pth'.format(total_epoch,save_tag))
     save_checkpoint(batch_size,epoch,model,optimizer,scheduler,save_path)
     logger.info("checkpoint is saved: {}".format(save_path))
-
+    logger.info(f"log saved at {log_path}")
+    logger.handlers.clear()
 
 
 if __name__ == "__main__":
