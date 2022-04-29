@@ -34,6 +34,7 @@ train_dataset_config = dict(
     ann_dir = "/home/gkf/project/VidVRD_VidOR/vidor-dataset/annotation",
     video_dir = "/home/gkf/project/VidVRD_VidOR/vidor-dataset/train_videos",
     classeme_dir = "/home/gkf/project/deepSORT/tracking_results/miss60_minscore0p3/VidORtrain_freq1_classeme",
+    video_feature_dir = "/home/gkf/project/I3D_Pytorch/I3D_clip_features/clip16_overlap0.5",
     proposal_dir = {
         0:"proposals/miss60_minscore0p3/VidORtrain_freq1_part01",
         1:"proposals/miss60_minscore0p3/VidORtrain_freq1_part02",
