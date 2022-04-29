@@ -38,7 +38,7 @@ This section helps you download the tracklets data and place them correctly, as 
 **NOTE** we use the term `proposal` in our code to represent tracklet proposals in video-level, which is totally different with the concept of "proposal" in "proposal-based methods" in our paper. In our paper, we use "proposals to represent paired subject-object tracklet segments. In contrast, here the term `proposal` in our code represents long-term object tracklets in video-level (i.e., without sliding window or video segments).
 
 ## Tracklet data for VidVRD 
-1. Download the tracklet with features at here:  [train (to be released)](), [test](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876)
+1. Download the tracklet with features at here:  [train](https://mega.nz/folder/1QA31RaK#pEP60O-ENr-5k_9ByoJhag), [test](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876)
 
 2. Download the tracklet with features used in ["Beyond Short-Term Snippet: Video Relation Detection with Spatio-Temporal Global Context"](https://pkumyd.github.io/paper/CVPR2020_VideoVRD.pdf) at the author's personal page [here](http://www.muyadong.com/publication.html). (**NOTE** we use the term `pku` (i.e., Peking University) in our code to refer to their tracklets & features)
 
