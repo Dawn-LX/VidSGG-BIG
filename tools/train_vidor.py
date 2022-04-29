@@ -4,6 +4,7 @@
 import root_path
 import argparse
 import os
+import pickle
 import numpy as np
 import torch
 import torch.nn as nn
@@ -15,7 +16,7 @@ from dataloaders.dataloader_vidor import Dataset
 from models import BIG_C_vidor,Base_C
 
 from utils.DataParallel import VidSGG_DataParallel
-from utils.utils_func import create_logger,parse_config_py
+from utils.utils_func import create_logger,parse_config_py,dura_intersection_ts,vIoU_ts
 
 
 torch.set_printoptions(sci_mode=False,precision=4,linewidth=160)
@@ -76,12 +77,17 @@ def trajid2pairid(num_prop):
 
     return pair_ids
 
-def prop_pair_to_gt_pred():
-    positive_vIoU_th = 0.5
-    dataset_config = get_config(is_train=True)
+def prop_pair_to_gt_pred(dataset,positive_vIoU_th):
 
-    dataset = Dataset(**dataset_config)
-    dataloader = torch.utils.data.DataLoader(dataset,batch_size=1,drop_last=False,collate_fn = collator_func_v2,shuffle=False)
+    assert len(dataset.proposal_dir) == 14, "we suggest that assign labels for all 14 parts together"
+    dataloader0 = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=1,
+        drop_last=False,
+        collate_fn = dataset.collator_func,
+        shuffle=False
+    )
+
     num_total_hit_gt_traj = 0
     num_total_gt_traj = 0
     
@@ -90,7 +96,7 @@ def prop_pair_to_gt_pred():
     
 
     label_maps = {}
-    for proposal_list,gt_graph_list in tqdm(dataloader):
+    for proposal_list,gt_graph_list in tqdm(dataloader0):
         gt_graph = gt_graph_list[0]
         proposal = proposal_list[0]
         video_name = gt_graph.video_name
@@ -99,7 +105,7 @@ def prop_pair_to_gt_pred():
             continue
 
         pr_trajbboxes,pr_trajduras = proposal.bboxes_list,proposal.traj_durations
-        gt_trajbboxes,gt_trajduras = gt_graph.traj_bboxes,gt_graph.traj_durations      # gt 和 proposal 匹配的时候没有考虑 category
+        gt_trajbboxes,gt_trajduras = gt_graph.traj_bboxes,gt_graph.traj_durations
         num_gt_enti = len(gt_trajbboxes)
         inter_dura,dura_mask = dura_intersection_ts(pr_trajduras,gt_trajduras)  # shape == (n_traj,n_gt_traj,2)
         
@@ -156,13 +162,12 @@ def prop_pair_to_gt_pred():
 
         label_maps[video_name] = trajids2gt5tuples
 
-    # save_path = "train_eval_tools/VidORtrain_label_maps_dataloader_vidor.pkl"
-    # with open(save_path,'wb') as f:
-    #     pickle.dump(label_maps,f)
-
     print("traj",num_total_hit_gt_traj,num_total_gt_traj,num_total_hit_gt_traj/num_total_gt_traj)
     print("pred",num_total_hit_gt_pred,num_total_gt_pred,num_total_hit_gt_pred/num_total_gt_pred)
     
+    del dataloader0
+
+    return label_maps
 
 
 
@@ -209,15 +214,33 @@ def train_baseline(
     device=torch.device("cuda")
     # device = torch.device("cpu")
 
-    ############# ----------------------------------------------------
-    logger.info("load and prepare predicate labels...")
+
+    # training configs
+    batch_size          = train_config["batch_size"]
+    total_epoch         = train_config["total_epoch"]
+    initial_lr          = train_config["initial_lr"]
+    lr_decay            = train_config["lr_decay"]
+    epoch_lr_milestones = train_config["epoch_lr_milestones"]
+
+    dataset = Dataset(**dataset_config)
+
+    
     num_pred_cats = model_config["num_pred_cats"]  # include background
-    label_map_path = "datasets/cache/VidORtrain_label_maps_vIoU{:.2f}.pkl".format(model_config["positive_vIoU_th"])
-    with open(label_map_path,'rb') as f:
-        label_map = pickle.load(f)
+    positive_vIoU_th = model_config["positive_vIoU_th"]
+    label_map_path = "datasets/cache/VidORtrain_label_maps_vIoU{:.2f}.pkl".format(positive_vIoU_th)
+
+    if os.path.exists(label_map_path):
+        logger.info("load assigned labels... from cache file : {}".format(label_map_path))
+        with open(label_map_path,'rb') as f:
+            label_map = pickle.load(f)
+    else:
+        logger.info("no cache file found, start assigning labels... save_path = {}".format(label_map_path))
+        label_map = prop_pair_to_gt_pred(dataset,positive_vIoU_th)
+        with open(label_map_path,'wb') as f:
+            pickle.dump(label_map,f)
     
     trajpair2labels = {}
-    for video_name, trajids2gt5tuples in tqdm(label_map.items()):
+    for video_name, trajids2gt5tuples in label_map.items():
         num_pairs = len(trajids2gt5tuples.keys())
         if num_pairs == 0:
             trajpair2labels[video_name] = None
@@ -231,17 +254,7 @@ def train_baseline(
             multihot[idx,pred_catids] = 1   # TODO add negative samples
         
         trajpair2labels[video_name] = (pairid2trajids,multihot)
-    ############# ----------------------------------------------------
 
-
-    # training configs
-    batch_size          = train_config["batch_size"]
-    total_epoch         = train_config["total_epoch"]
-    initial_lr          = train_config["initial_lr"]
-    lr_decay            = train_config["lr_decay"]
-    epoch_lr_milestones = train_config["epoch_lr_milestones"]
-
-    dataset = Dataset(**dataset_config)
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
@@ -341,7 +354,7 @@ def train_baseline(
 
 
 
-def train(
+def train_cls_stage(
     cfg_path,
     experiment_dir=None,
     save_tag = "",
@@ -481,6 +494,152 @@ def train(
     logger.handlers.clear()
 
 
+ 
+def train_grounding_stage(
+    cfg_path,
+    experiment_dir=None, 
+    save_tag = "",
+    from_checkpoint = False,
+    ckpt_path = None
+):
+    ## import model class 
+    temp = model_class_path.split('.')[0].split('/')
+    model_class_path = ".".join(temp)
+    DEBUG = import_module(model_class_path).DEBUG
+
+    ## create dirs and logger
+    if experiment_dir == None:
+        experiment_dir = os.path.dirname(cfg_path)
+    log_dir = os.path.join(experiment_dir,'logfile/')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    if not from_checkpoint:
+        os.system("rm {}events*".format(log_dir))
+    
+    writer = SummaryWriter(log_dir)
+    log_path = os.path.join(log_dir,'train.log')
+    logger = create_logger(log_path)
+
+    ## load configs
+    all_cfgs = parse_config_py(cfg_path)
+    model_config = all_cfgs["model_config"]
+    dataset_config = all_cfgs["train_dataset_config"]
+    train_config = all_cfgs["train_config"]
+
+    logger.info(model_config)
+    logger.info(dataset_config)
+    logger.info(train_config)
+
+    ## construct model
+    model = DEBUG(model_config,is_train=True)
+    total_num = sum([p.numel() for p in model.parameters()])
+    trainable_num = sum([p.numel() for p in model.parameters() if p.requires_grad])
+    logger.info("number of model.parameters: total:{},trainable:{}".format(total_num,trainable_num))
+
+    model = VORG_DataParallel(model,device_ids=device_ids)
+    model = model.cuda("cuda:{}".format(device_ids[0]))
+
+    # training configs
+
+    batch_size          = train_config["batch_size"]
+    total_epoch         = train_config["total_epoch"]
+    initial_lr          = train_config["initial_lr"]
+    lr_decay            = train_config["lr_decay"]
+    epoch_lr_milestones = train_config["epoch_lr_milestones"]
+
+
+    dataset = Dataset(**dataset_config)
+
+    dataloader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size,
+        drop_last=True,
+        collate_fn=dataset.collator_func,
+        shuffle=True,
+        num_workers=2
+    )
+
+    dataset_len = len(dataset)
+    dataloader_len = len(dataloader)
+    logger.info(
+        "len(dataset)=={},batch_size=={},len(dataloader)=={},{}x{}={}".format(
+            dataset_len,batch_size,dataloader_len,batch_size,dataloader_len,batch_size*dataloader_len
+        )
+    )
+    
+
+    milestones = [int(m*dataset_len/batch_size) for m in epoch_lr_milestones]
+    optimizer = torch.optim.Adam(model.parameters(), lr = initial_lr)  
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones,gamma=lr_decay)
+
+
+    if from_checkpoint:
+        model,optimizer,scheduler,crt_epoch,batch_size_ = load_checkpoint(model,optimizer,scheduler,ckpt_path)
+        # assert batch_size == batch_size_ , "batch_size from checkpoint not match : {} != {}"
+        if batch_size != batch_size_:
+            logger.warning(
+                "!!!Warning!!! batch_size from checkpoint not match : {} != {}".format(batch_size,batch_size_)
+            )
+        logger.info("checkpoint load from {}".format(ckpt_path))
+    else:
+        crt_epoch = 0
+
+    logger.info("start training:")
+    logger.info("cfg_path = {}".format(cfg_path))
+    logger.info("weights will be saved in experiment_dir = {}".format(experiment_dir))
+
+
+    it=0
+    for epoch in tqdm(range(total_epoch)):
+        if epoch < crt_epoch:
+            it+=dataloader_len
+            continue
+
+        epoch_loss = defaultdict(list)
+        for video_feature_list,proposal_list,gt_graph_list in dataloader:
+            
+            optimizer.zero_grad()
+            combined_loss, each_loss_term = model(video_feature_list,gt_graph_list)
+            # average results from muti-gpus
+            combined_loss = combined_loss.mean()
+            each_loss_term = {k:v.mean() for k,v in each_loss_term.items()}
+            
+            loss_str = "epoch={},iter={},loss={:.4f}; ".format(epoch,it,combined_loss.item())
+            writer.add_scalar('Iter/total_loss', combined_loss.item(), it)
+            epoch_loss["total_loss"].append(combined_loss.item())
+            combined_loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), max_norm=5, norm_type=2)
+            optimizer.step()
+            scheduler.step()
+
+            for k,v in each_loss_term.items():
+                epoch_loss[k].append(v.item())
+                loss_str += "{}:{:.4f}; ".format(k,v.item())
+                writer.add_scalar('Iter/{}'.format(k), v.item(), it)
+            loss_str += "lr={}".format(optimizer.param_groups[0]["lr"])
+            if it % 10 == 0:
+                logger.info(loss_str)
+            it+=1
+    
+    
+        epoch_loss_str = "mean_loss_epoch={}: ".format(epoch)
+        for k,v in epoch_loss.items():  
+            v = np.mean(v)
+            writer.add_scalar('Epoch/{}'.format(k), v, epoch)
+            epoch_loss_str += "{}:{:.4f}; ".format(k,v)
+        logger.info(epoch_loss_str)
+        
+        if epoch >0 and epoch % 10 == 0:
+            save_path = os.path.join(experiment_dir,'model_epoch_{}_{}.pth'.format(epoch,save_tag))
+            save_checkpoint(batch_size,epoch,model,optimizer,scheduler,save_path)
+            logger.info("checkpoint is saved: {}".format(save_path))
+    
+    save_path = os.path.join(experiment_dir,'model_epoch_{}_{}.pth'.format(total_epoch,save_tag))
+    save_checkpoint(batch_size,epoch,model,optimizer,scheduler,save_path)
+    logger.info("checkpoint is saved: {}".format(save_path))
+
+
+
 
 if __name__ == "__main__":
 
@@ -489,14 +648,34 @@ if __name__ == "__main__":
     parser.add_argument("--cfg_path", type=str,help="...")
     parser.add_argument("--from_checkpoint",action="store_true",default=False,help="...")
     parser.add_argument("--ckpt_path", type=str,help="...")    
-    parser.add_argument("--use_baseline", action="store_true",default=False,help="...")
+    parser.add_argument("--train_baseline", action="store_true",default=False,help="...")
+    parser.add_argument("--train_grounding", action="store_true",default=False,help="...")
     parser.add_argument("--output_dir", type=str, help="...")
     parser.add_argument("--save_tag", type=str,default="",help="...")
     
     args = parser.parse_args()
 
+    if args.train_baseline:
+        train_baseline(
+            args.cfg_path,
+            experiment_dir=args.output_dir,
+            save_tag=args.save_tag,
+            from_checkpoint=args.from_checkpoint,
+            ckpt_path=args.ckpt_path
+        )
+        exit(0)
+    
+    if args.train_grounding:
+        train_grounding_stage(
+            args.cfg_path,
+            experiment_dir=args.output_dir,
+            save_tag=args.save_tag,
+            from_checkpoint=args.from_checkpoint,
+            ckpt_path=args.ckpt_path
+        )
+        exit(0)
 
-    train(
+    train_cls_stage(
         args.cfg_path,
         experiment_dir=args.output_dir,
         save_tag=args.save_tag,
@@ -505,18 +684,19 @@ if __name__ == "__main__":
     )
 
     '''
-    ## for exp4 (we use two RTX 2080Ti for batch_size=4)
+    ## for exp4 
     CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidor.py \
         --cfg_path experiments/exp4/config_.py \
         --save_tag retrain
     
+    ## for exp5
     CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidor.py \
         --cfg_path experiments/exp5/config_.py \
         --save_tag retrain
     
-
-    CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidor.py \
-        --use_baseline \
+    ## for exp6
+    CUDA_VISIBLE_DEVICES=1 python tools/train_vidor.py \
+        --train_baseline \
         --cfg_path experiments/exp6/config_.py \
         --save_tag retrain
     '''

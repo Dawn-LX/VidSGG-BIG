@@ -261,8 +261,8 @@ class Base_C(nn.Module):
                 assert enti_clsme is None
                 sub_clsme = self.EntiNameEmb[pred_socatid[:,0],:]  # shape == (n_pos_pairs, 300)
                 obj_clsme = self.EntiNameEmb[pred_socatid[:,1],:]  # shape == (n_pos_pairs, 300)
-            for x in [sub_clsme,obj_clsme,sub_feat,obj_feat]:
-                print(x.shape)
+            # for x in [sub_clsme,obj_clsme,sub_feat,obj_feat]:
+            #     print(x.shape)
             combined_features = torch.cat([sub_clsme,obj_clsme,sub_feat,obj_feat],dim=-1)  # shape == (n_querys,600+2*dim_enti)
         else:
             combined_features = torch.cat([sub_feat,obj_feat],dim=-1)  # shape == (n_querys,2*dim_enti)

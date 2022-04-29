@@ -133,13 +133,19 @@ Put them under the dir of this project (or any other position if you use absolut
         --save_tag retrain
     ```
 
-2. For **VidOR**, TODO ...
+2. For **VidOR**, refer to `tools/train_vidor.py.py` for more details
 
-    e.g., for exp4
+    Run the following commands to train BIG-C (i.e., only the classification stage). e.g., for exp4
     ```
-    ...
+    CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidor.py \
+        --cfg_path experiments/exp4/config_.py \
+        --save_tag retrain
     ```
 
+    Note that we pre-assign all the labels for Base-C (**around 1.5 hours**) since it does not require bipartite matching between predicate and GTs
+
+    Run the following commands to train the grounding stage.
+    
 
 
 the code for training is still being organized (an initial version will be completed before April 30, 2022).

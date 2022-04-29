@@ -448,8 +448,6 @@ def vIoU_ts(traj_1,traj_2,dura_1,dura_2):
     # warnings.warn(Warning_str, DeprecationWarning)
     # print(Warning_str)
 
-    ## NOTE 我们没有实现 vIoU_ts_abs ， 如果要实现 vIoU_ts_abs的话，就要在 vIoU_ts_abs 内部执行 dura_intersection_ts 了
-    ## 但是我们现在是要在外部执行 dura_intersection_ts， 因为我们要用到 inter_dura, 所以我们对 vIoU_ts 的实现方式采用 relative_dura
 
 
     assert isinstance(traj_1,torch.Tensor) and isinstance(traj_2,torch.Tensor)
