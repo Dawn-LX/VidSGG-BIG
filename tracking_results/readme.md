@@ -30,3 +30,10 @@ we explain some parameters in the file names (e.g., VidORtrain_freq1_m60s0.3_par
 - s0.3: the score threshold is deepSORT, the bounding box with confidence lower than 0.3 will be deleted and will not be considered  for tracking.
 
 - 0000_2401075277: 0000 is the group id and 2401075277 is the video id, i.e., this "0000_2401075277.npy" corresponds to "0000/2401075277.mp4" in VidOR train set.
+
+
+# Object tracklets for VidVRD train/test set
+ - VidVRD_train_every1frames: 800 `.npy` files
+ - VidVRD_test_every1frames: 200 `.npy` files
+ - these `.npy` files have the same format as that in VidOR. Refer to `format_demo.py`
+ - The parameters we used in deepSORT for VidVRD: m30s0.3
