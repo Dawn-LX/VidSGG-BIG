@@ -26,6 +26,10 @@ Download the [ImageNet-VidVRD](https://xdshang.github.io/docs/imagenet-vidvrd.ht
 │   └── GT_json_for_eval
 │       ├── VidORval_gts.json       # GT josn for evlauate
 │       └── VidVRDtest_gts.json
+├── tracking_results                # tracklets data & features
+│   ├── ...
+│   ├── format_demo.py              
+│   └── readme.md   
 ├── experiments   
 ├── models
 ├── ...
@@ -38,7 +42,7 @@ This section helps you download the tracklets data and place them correctly, as 
 **NOTE** we use the term `proposal` in our code to represent tracklet proposals in video-level, which is totally different with the concept of "proposal" in "proposal-based methods" in our paper. In our paper, we use "proposals to represent paired subject-object tracklet segments. In contrast, here the term `proposal` in our code represents long-term object tracklets in video-level (i.e., without sliding window or video segments).
 
 ## Tracklet data for VidVRD 
-1. Download the tracklet with features at here:  [train](https://mega.nz/folder/1QA31RaK#pEP60O-ENr-5k_9ByoJhag), [test](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876)
+1. Download the tracklet with features at here:  [train](https://mega.nz/folder/1QA31RaK#pEP60O-ENr-5k_9ByoJhag), [test](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876). And put them in `tracking_results/`.
 
 2. Download the tracklet with features used in ["Beyond Short-Term Snippet: Video Relation Detection with Spatio-Temporal Global Context"](https://pkumyd.github.io/paper/CVPR2020_VideoVRD.pdf) at the author's personal page [here](http://www.muyadong.com/publication.html). (**NOTE** we use the term `pku` (i.e., Peking University) in our code to refer to their tracklets & features)
 
@@ -58,6 +62,13 @@ Put them under the dir of this project (or any other position if you use absolut
 ## Tracklet data for VidOR 
 
 - Download the I3D feature of train & val videos (used for grounding stage) at [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg)
+- Download the pre-prepared cache data for VidOR-val ([here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw), around 19G), VidOR-train ([here, to be released](), 14 parts in total, around 130G), and put them in `datasets/cache`.
+- **Some Notes** 
+
+    Ideally, you can prepare these cache data from `.npy` files (as did in VidVRD). However, due to some ancient coding reasons, we extract bbox RoI feature for each frame, which makes these `.npy` files too large (**827G** for VidOR-train and **90G** for VidOR-val). Therefore, we only release pre-prepared cache data as above.
+    
+    Despite this, we still release the `.npy` files without RoI features, i.e., only box positions, ([here](https://drive.google.com/drive/folders/1wWkzHlhYcZPQR4fUMTTJEn2SVVnhGFch?usp=sharing), around 12G), and you can extract their RoI features based on the position by yourself. Refer to this repository [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets) for more details.
+
 
 # Evaluation: 
 **First, make sure you run `tools/dataloader_demo.py` successfully**
@@ -127,7 +138,7 @@ Put them under the dir of this project (or any other position if you use absolut
 
     e.g., for exp1
     ```
-    CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidvrd.py \
+    CUDA_VISIBLE_DEVICES=0,1 python tools/train_vidvrd.py \
         --cfg_path experiments/exp1/config_.py \
         --use_pku \
         --save_tag retrain
@@ -137,15 +148,20 @@ Put them under the dir of this project (or any other position if you use absolut
 
     Run the following commands to train BIG-C (i.e., only the classification stage). e.g., for exp4
     ```
-    CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidor.py \
+    CUDA_VISIBLE_DEVICES=0,1 python tools/train_vidor.py \
         --cfg_path experiments/exp4/config_.py \
         --save_tag retrain
     ```
 
-    Note that we pre-assign all the labels for Base-C (**around 1.5 hours**) since it does not require bipartite matching between predicate and GTs
+    Note that we pre-assign all the labels for Base-C (exp6) since it does not require bipartite matching between predicate and GTs. The label assignment takes around **1.5 hours**.
 
-    Run the following commands to train the grounding stage.
-    
+    Run the following commands to train the grounding stage:
+    ```
+    CUDA_VISIBLE_DEVICES=2,3 python tools/train_vidor.py \
+        --train_grounding \
+        --cfg_path experiments/grounding_weights/config_.py \
+        --save_tag retrain
+    ```
 
 
 the code for training is still being organized (an initial version will be completed before April 30, 2022).
@@ -155,7 +171,7 @@ the code for training is still being organized (an initial version will be compl
 
 - model weights for all exps (**Done**, dcd google drive, [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing))
 - I3D feature of VidOR train & val around 3.3G (**Done**, dcd MEGA cloud, [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg))
-- VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G) **Done** (jypcxlx google drive) refer to this repository: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
+- VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G) **Done** [here](https://drive.google.com/drive/folders/1wWkzHlhYcZPQR4fUMTTJEn2SVVnhGFch?usp=sharing) (jypcxlx google drive).refer to this repository: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
 - VidVRD traj `.npy` files (with feature) around 20G
     - VidVRD-test **Done**, gkf zju cloud, [here](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876) (3.87G)
     - VidVRD-train **Done** dcd MEGA cloud [here](https://mega.nz/folder/1QA31RaK#pEP60O-ENr-5k_9ByoJhag) (13G)

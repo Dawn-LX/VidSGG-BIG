@@ -681,12 +681,12 @@ if __name__ == "__main__":
     )
 
     '''
-    ## for exp4 
+    ## for exp4 (80 epochs, around 24 hours for 2 RTX 2080Ti with batch_size=4) or maybe one RTX 2080 Ti ?, I forgotten this ... 
     CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidor.py \
         --cfg_path experiments/exp4/config_.py \
         --save_tag retrain
     
-    ## for exp5
+    ## for exp5 (similar time as exp4)
     CUDA_VISIBLE_DEVICES=1,2 python tools/train_vidor.py \
         --cfg_path experiments/exp5/config_.py \
         --save_tag retrain
@@ -698,7 +698,7 @@ if __name__ == "__main__":
         --save_tag retrain
     
 
-    ## for train grounding stage
+    ## for train grounding stage (80 epochs, around 11 hours for 2 RTX 2080Ti with batch_size=8)
     CUDA_VISIBLE_DEVICES=2,3 python tools/train_vidor.py \
         --train_grounding \
         --cfg_path experiments/grounding_weights/config_.py \
