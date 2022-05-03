@@ -69,7 +69,7 @@ Put them under the dir of this project (or any other position if you use absolut
     
     Despite this, we still release the `.npy` files without RoI features, i.e., only box positions, ([here](https://drive.google.com/drive/folders/1wWkzHlhYcZPQR4fUMTTJEn2SVVnhGFch?usp=sharing), around 12G), and you can extract their RoI features based on the position by yourself. Refer to `tracking_results/readme.md` for more details about the tracklet data.
 
-    Refer to this repository [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets) for more details about extracting features based on the given bbox positions.
+    Refer to this repository [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets) (last Section of README.md) for more details about extracting features based on the given bbox positions.
 
 
 # Evaluation: 
