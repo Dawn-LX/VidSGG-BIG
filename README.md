@@ -89,7 +89,7 @@ Put them under the dir of this project (or any other position if you use absolut
         --dataset_type vidor \
         --save_path datasets/GT_json_for_eval/VidORval_gts.json
     ```
-2. Download model weights for different exps [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing), and put them in the `experiments/` dir.
+2. Download model weights for different exps [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing), and put them in the `experiments/` dir. Download pre-prepared data [here](https://mega.nz/folder/tY5HQQwK#9Mgw4usgxF5FEI4RZArfmw), and put them in the `prepared_data/` dir.
 3. Refer to `experiments/readme.md` for the correspondence between the exp ids and the table ids in our paper.
 4. For **VidVRD**, run the following commands to evaluate different exps: (refer to `tools/eval_vidvrd.py` for more details)
 
@@ -169,6 +169,7 @@ Put them under the dir of this project (or any other position if you use absolut
 # Data Release Summarize 
 
 - model weights for all exps (**Done**, dcd google drive, [here](https://drive.google.com/file/d/1vE-cQrNUrpSKrWC94orbbpVLkvuDKFwm/view?usp=sharing))
+- pre-prepared data (statical prior & category text Glove embddings) (dcd MEGA cloud, [here](https://mega.nz/folder/tY5HQQwK#9Mgw4usgxF5FEI4RZArfmw))
 - I3D feature of VidOR train & val around 3.3G (**Done**, dcd MEGA cloud, [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg))
 - VidOR traj `.npy` files (OnlyPos) (this has been released, around 12G) **Done** [here](https://drive.google.com/drive/folders/1wWkzHlhYcZPQR4fUMTTJEn2SVVnhGFch?usp=sharing) (jypcxlx google drive).refer to this repository: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
 - VidVRD traj `.npy` files (with feature) around 20G
