@@ -44,7 +44,12 @@ This section helps you download the tracklets data and place them correctly, as 
 ## Tracklet data for VidVRD 
 1. Download the tracklet with features at here:  [train](https://mega.nz/folder/1QA31RaK#pEP60O-ENr-5k_9ByoJhag), [test](https://pan.zju.edu.cn/share/694f908a22fff11c037eb50876). And put them in `tracking_results/`. Refer to `tracking_results/readme.md` for more details about the tracklet data.
 
-2. Download the tracklet with features used in ["Beyond Short-Term Snippet: Video Relation Detection with Spatio-Temporal Global Context"](https://pkumyd.github.io/paper/CVPR2020_VideoVRD.pdf) at the author's personal page [here](http://www.muyadong.com/publication.html). (**NOTE** we use the term `pku` (i.e., Peking University) in our code to refer to their tracklets & features)
+2. Download the tracklet with features used in ["Beyond Short-Term Snippet: Video Relation Detection with Spatio-Temporal Global Context"](https://pkumyd.github.io/paper/CVPR2020_VideoVRD.pdf) at the author's personal page [here](http://www.muyadong.com/publication.html).
+
+    **Some Notes** 
+    - we use the term `pku` (i.e., Peking University) in our code to refer to their tracklets & features)
+    - The original data released by them only have 999 `.npy` files (maybe they have updated the link now), missing data for video `ILSVRC2015_train_00884000`. So we trained our own Faster-RCNN (same training setting as the above paper), and extract the tracklet & features. And the supplemental data can be find [here](https://mega.nz/folder/FMhzFD4A#7R2c98TxgA7Av_b9-_ijYg).
+    
 
 3. The tracklet with features are in `VidVRD_test_every1frames` (ours), `VidVRD_train_every1frames` (ours), `preprocess_data/tracking/videovrd_detect_tracking` (PKU, both train & test), in whcih each `.npy` file corresponds to a video and contains all the tracklets in that video. The I3D features of tracklets are in `preprocess_data/tracking/videovrd_i3d` (PKU, both train & test).
 Put them under the dir of this project (or any other position if you use absolute path).
