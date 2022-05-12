@@ -76,6 +76,7 @@ Put them under the dir of this project (or any other position if you use absolut
 
     Refer to this repository [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets) (last Section of README.md) for more details about extracting features based on the given bbox positions.
 
+    As for classeme feature, For VidOR, we use the weighted average of category word embeddings, based on the classification probability vectors predicted by the detector. ("soft" classeme)  For VidVRD, we just use the  category word embeddings as classeme feature, i.e., "hard" classeme. refer to `tools_draft/extract_classeme.py` for more details.
 
 # Evaluation: 
 **First, make sure you run `tools/dataloader_demo.py` successfully**
