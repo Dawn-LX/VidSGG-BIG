@@ -1,3 +1,3 @@
 these scripts are  draft
 
-it's good if they can benefit you
+see if they can benefit you for some issues.
