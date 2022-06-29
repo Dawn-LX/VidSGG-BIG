@@ -2,6 +2,8 @@
 
 Pytorch implementation of our paper [Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs](https://arxiv.org/abs/2112.04222), which is accepted by CVPR2022.
 
+![cvpr2022-6703.png](pic/cvpr2022-6703.png)
+
 We also won the 1st place of Video Relation Understanding (VRU) Grand Challenge in ACM Multimedia 2021, with a simplified version of our model.(The code for object tracklets generation is available at [here](https://github.com/Dawn-LX/VidVRD-tracklets))
 
 # Requirements
