@@ -1,6 +1,7 @@
 # Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs
 
-Pytorch implementation of our paper [Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs](https://arxiv.org/abs/2112.04222), which is accepted by CVPR2022.
+Pytorch implementation of our paper [**Classification-Then-Grounding: Reformulating Video Scene Graphs as Temporal Bipartite Graphs**](https://openaccess.thecvf.com/content/CVPR2022/html/Gao_Classification-Then-Grounding_Reformulating_Video_Scene_Graphs_As_Temporal_Bipartite_Graphs_CVPR_2022_paper.html), which is accepted by CVPR2022. [(arXiv)](https://arxiv.org/abs/2112.04222)
+
 
 ![cvpr2022-6703.png](pic/cvpr2022-6703.png)
 
