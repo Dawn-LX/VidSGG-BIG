@@ -189,6 +189,8 @@ Put them under the dir of this project (or any other position if you use absolut
     - v9 for val (around 19G) (*dcd* MEGA cloud [here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw))
     - v7 for train (14 parts, around 126G in total [here](https://mega.nz/folder/8IBzkKQS#6TXQWikT4HL5LoCnQrpsJA))
 
+**[Update]:** Because the link of pku data provided by pku's author isn't available anymore. We upload their data into our MEGA cloud: [here](https://mega.nz/file/UAgnXbjC#YqrlUe2rNl7qEEcr_NbxNk0qPX-Y5O2BZWVhHgqCK9g) (6.21G)
+
 (*dcd* is just the name of MEGA cloud account of our Lab :) )
 
 
