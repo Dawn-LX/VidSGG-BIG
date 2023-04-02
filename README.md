@@ -70,7 +70,7 @@ Put them under the dir of this project (or any other position if you use absolut
 ## Tracklet data for VidOR 
 
 - Download the I3D feature of train & val videos (used for grounding stage) at [here](https://mega.nz/folder/FAxh0CiC#2zLOovjX8epdgMq5rXwEhg)
-    - we extract the I3D feature by following (this repo)[https://github.com/piergiaj/pytorch-i3d] (and also use their released pre-trained I3D weight)
+    - we extract the I3D feature by following [this repo](https://github.com/piergiaj/pytorch-i3d) (and also use their released pre-trained I3D weight).
 - Download the pre-prepared cache data for VidOR-val ([here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw), around 19G), VidOR-train ([here](https://mega.nz/folder/8IBzkKQS#6TXQWikT4HL5LoCnQrpsJA), 14 parts in total, around 126G), and put them in `datasets/cache`. (these cached data includes classeme features)
 - **Some Notes** 
 
