@@ -193,7 +193,7 @@ Put them under the dir of this project (or any other position if you use absolut
 - **[Update]:** Because the link of pku data provided by pku's author isn't available anymore. We upload their data into our MEGA cloud: [here](https://mega.nz/file/UAgnXbjC#YqrlUe2rNl7qEEcr_NbxNk0qPX-Y5O2BZWVhHgqCK9g) (6.21G)
 
 - **[Update]:** For the Tracklet detector's weight:
-   - for VidOR dataset, refer to this repo: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
+   - for VidOR dataset, it has been released in our previous repo: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets), and can be downloaded [here](https://drive.google.com/file/d/1nypbyRLpiQkxr7jvnnM4LEx2ZJuzrjws/view)
    - for VidVRD dataset, download [here](https://mega.nz/file/5BJTQDQJ#cq6tbP5E7H9oVH1ztz0wZ9pfBudYgp2Gj4B3ly3u1sM) (NOTE that this weight is the re-trained version, not the same as that was used in our paper)
    - for the training data of the Tracklet detector, refer to the Appendix of our paper
       
