@@ -190,7 +190,13 @@ Put them under the dir of this project (or any other position if you use absolut
     - v9 for val (around 19G) (*dcd* MEGA cloud [here](https://mega.nz/folder/VcwA1DaI#YW2M_uFsbsE6twHDIpfPuw))
     - v7 for train (14 parts, around 126G in total [here](https://mega.nz/folder/8IBzkKQS#6TXQWikT4HL5LoCnQrpsJA))
 
-**[Update]:** Because the link of pku data provided by pku's author isn't available anymore. We upload their data into our MEGA cloud: [here](https://mega.nz/file/UAgnXbjC#YqrlUe2rNl7qEEcr_NbxNk0qPX-Y5O2BZWVhHgqCK9g) (6.21G)
+- **[Update]:** Because the link of pku data provided by pku's author isn't available anymore. We upload their data into our MEGA cloud: [here](https://mega.nz/file/UAgnXbjC#YqrlUe2rNl7qEEcr_NbxNk0qPX-Y5O2BZWVhHgqCK9g) (6.21G)
+
+- **[Update]:** For the Tracklet detector's weight:
+   - for VidOR dataset, refer to this repo: [VidVRD-tracklets](https://github.com/Dawn-LX/VidVRD-tracklets)
+   - for VidVRD dataset, download [here](https://mega.nz/file/5BJTQDQJ#cq6tbP5E7H9oVH1ztz0wZ9pfBudYgp2Gj4B3ly3u1sM) (NOTE that this weight is the re-trained version, not the same as that was used in our paper)
+   - for the training data of the Tracklet detector, refer to the Appendix of our paper
+      
 
 (*dcd* is just the name of MEGA cloud account of our Lab :) )
 
